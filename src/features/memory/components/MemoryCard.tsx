@@ -1,15 +1,18 @@
 "use client";
 
-import { Volume2 } from "lucide-react";
+import { Pencil, Volume2 } from "lucide-react";
 
+import { Button } from "@/components/ui/button";
 import type { Memory } from "@/features/memory/schemas";
 
 export function MemoryCard({
   memory,
   currentUserId,
+  onEdit,
 }: {
   memory: Memory;
   currentUserId: string;
+  onEdit?: (memory: Memory) => void;
 }) {
   const firstPhoto = memory.media.find((m) => m.kind === "photo");
   const firstAudio = memory.media.find((m) => m.kind === "audio");
@@ -19,16 +22,30 @@ export function MemoryCard({
     ? Math.round(firstAudio.duration_ms / 1000)
     : null;
 
+  const photoCount = memory.media.filter((m) => m.kind === "photo").length;
+  const audioCount = memory.media.filter((m) => m.kind === "audio").length;
+
   return (
-    <article className="rounded-2xl bg-[#F3E8DA] p-5 shadow-sm">
-      <h3 className="font-heading text-xl text-amber-950">
-        {memory.title || "Untitled memory"}
-      </h3>
+    <article className="flex flex-col rounded-2xl bg-[#F3E8DA] p-5 shadow-sm">
+      <div className="flex items-start justify-between gap-2">
+        <h3 className="font-heading text-xl text-amber-950">
+          {memory.title || "Untitled memory"}
+        </h3>
+        {onEdit && (
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            onClick={() => onEdit(memory)}
+            className="rounded-lg border-amber-900/20 bg-white/60 text-amber-900 hover:bg-white"
+          >
+            <Pencil className="size-3.5" /> Edit
+          </Button>
+        )}
+      </div>
 
       {firstPhoto && (
         <div className="mt-3 overflow-hidden rounded-xl">
-          {/* Storage URLs are dynamic signed URLs, so a native image avoids
-              Next Image hostname configuration requirements. */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={firstPhoto.playback_url}
@@ -36,6 +53,11 @@ export function MemoryCard({
             loading="lazy"
             className="h-48 w-full object-cover"
           />
+          {photoCount > 1 && (
+            <p className="mt-1 text-xs text-amber-900/60">
+              +{photoCount - 1} more photograph{photoCount - 1 > 1 ? "s" : ""}
+            </p>
+          )}
         </div>
       )}
 
@@ -44,6 +66,11 @@ export function MemoryCard({
           <div className="flex items-center justify-between px-1 text-xs font-semibold text-amber-950">
             <span className="flex items-center gap-1.5">
               <Volume2 className="size-4 text-amber-900" /> Voice Recording
+              {audioCount > 1 && (
+                <span className="text-amber-900/60">
+                  · +{audioCount - 1} more
+                </span>
+              )}
             </span>
             {durationSec !== null && (
               <span className="rounded-md bg-amber-900/10 px-2 py-0.5 text-amber-900">

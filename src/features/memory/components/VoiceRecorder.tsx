@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Mic, Pause, Play, Square, Trash2 } from "lucide-react";
+import { Mic, Pause, Play, Square } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 
@@ -30,6 +30,12 @@ export function VoiceRecorder({
   const startTimeRef = useRef<number>(0);
   const totalPausedTimeRef = useRef<number>(0);
   const pauseStartRef = useRef<number>(0);
+  const onSaveRef = useRef(onSave);
+
+  // Keep the latest onSave without re-binding recorder events.
+  useEffect(() => {
+    onSaveRef.current = onSave;
+  }, [onSave]);
 
   useEffect(() => {
     return () => {
@@ -80,6 +86,15 @@ export function VoiceRecorder({
           streamRef.current.getTracks().forEach((t) => t.stop());
           streamRef.current = null;
         }
+
+        // Auto-attach on stop. User can still remove/re-record.
+        onSaveRef.current(c);
+        // Reset UI immediately so the recorder is ready for another take
+        // without showing the "attach" prompt.
+        setClip(null);
+        setDurationMs(0);
+        chunksRef.current = [];
+        setState("idle");
       };
 
       recorder.start(200);
@@ -139,24 +154,6 @@ export function VoiceRecorder({
     }
   }
 
-  function discard() {
-    if (clip) URL.revokeObjectURL(clip.url);
-    setClip(null);
-    setDurationMs(0);
-    chunksRef.current = [];
-    setState("idle");
-  }
-
-  function save() {
-    if (clip) {
-      onSave(clip);
-      setClip(null);
-      setDurationMs(0);
-      chunksRef.current = [];
-      setState("idle");
-    }
-  }
-
   const seconds = Math.floor(durationMs / 1000);
 
   return (
@@ -171,7 +168,6 @@ export function VoiceRecorder({
           {state === "idle" && "Ready to record"}
           {state === "recording" && `Recording… ${formatTime(seconds)}`}
           {state === "paused" && `Paused at ${formatTime(seconds)}`}
-          {state === "stopped" && `Recorded ${formatTime(seconds)}`}
         </div>
       </div>
 
@@ -179,7 +175,7 @@ export function VoiceRecorder({
 
       <div className="flex flex-wrap gap-2">
         {state === "idle" && (
-          <Button type="button" onClick={start} variant="default" className="bg-[#65402A] hover:bg-amber-950">
+          <Button type="button" onClick={start} className="bg-[#65402A] hover:bg-amber-950">
             <Mic className="size-4" /> Start Recording
           </Button>
         )}
@@ -195,26 +191,13 @@ export function VoiceRecorder({
         )}
         {state === "paused" && (
           <>
-            <Button type="button" onClick={resume} variant="default" className="bg-[#65402A] hover:bg-amber-950">
+            <Button type="button" onClick={resume} className="bg-[#65402A] hover:bg-amber-950">
               <Play className="size-4" /> Resume
             </Button>
             <Button type="button" onClick={stop} className="bg-[#65402A] hover:bg-amber-950">
               <Square className="size-4" /> Stop
             </Button>
           </>
-        )}
-        {state === "stopped" && clip && (
-          <div className="flex w-full flex-col gap-2">
-            <audio controls src={clip.url} className="w-full" />
-            <div className="flex gap-2">
-              <Button type="button" onClick={save} className="bg-[#65402A] hover:bg-amber-950">
-                Attach to memory
-              </Button>
-              <Button type="button" onClick={discard} variant="outline">
-                <Trash2 className="size-4" /> Re-record
-              </Button>
-            </div>
-          </div>
         )}
       </div>
     </div>
