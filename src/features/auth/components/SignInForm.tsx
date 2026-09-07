@@ -45,28 +45,34 @@ export function SignInForm() {
   }
 
   return (
-    <div className="w-full max-w-md space-y-6 rounded-3xl bg-white p-8 shadow-xl">
+    <div className="w-full max-w-md space-y-6 rounded-[20px] border border-paper-400 bg-paper-000 p-8 shadow-e2">
       <div className="space-y-2 text-center">
-        <h1 className="font-heading text-3xl text-amber-950">Welcome Back</h1>
-        <p className="text-sm text-amber-900/70">
+        <h1 className="font-heading text-3xl text-ink-900">Welcome back</h1>
+        <p className="text-sm text-ink-500">
           Sign in to continue preserving memories
         </p>
       </div>
 
       {error && (
-        <div className="rounded-lg bg-destructive/10 p-3 text-sm text-destructive">
+        <div
+          className="rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive"
+          role="alert"
+        >
           {error}
         </div>
       )}
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="email">Email</Label>
+          <Label htmlFor="email" className="text-sm font-medium text-ink-700">
+            Email
+          </Label>
           <Input
             id="email"
             type="email"
             {...register("email")}
             placeholder="you@example.com"
+            className="h-12 bg-paper-000"
             aria-invalid={Boolean(errors.email)}
           />
           {errors.email && (
@@ -75,12 +81,15 @@ export function SignInForm() {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="password">Password</Label>
+          <Label htmlFor="password" className="text-sm font-medium text-ink-700">
+            Password
+          </Label>
           <Input
             id="password"
             type="password"
             {...register("password")}
             placeholder="••••••••"
+            className="h-12 bg-paper-000"
             aria-invalid={Boolean(errors.password)}
           />
           {errors.password && (
@@ -90,30 +99,30 @@ export function SignInForm() {
 
         <Button
           type="submit"
-          className="w-full rounded-full bg-[#65402A] hover:bg-amber-950"
+          className="h-12 w-full rounded-lg text-base"
           disabled={loading}
         >
-          {loading ? "Signing in..." : "Sign In"}
+          {loading ? "Signing in…" : "Sign in"}
         </Button>
       </form>
 
       <div className="relative">
         <div className="absolute inset-0 flex items-center">
-          <span className="w-full border-t border-amber-900/10" />
+          <span className="w-full border-t border-paper-400" />
         </div>
-        <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-white px-2 text-amber-900/70">Or continue with</span>
+        <div className="relative flex justify-center text-xs">
+          <span className="bg-paper-000 px-2 text-ink-400">Or continue with</span>
         </div>
       </div>
 
       <Button
         type="button"
         variant="outline"
-        className="w-full"
+        className="h-11 w-full"
         onClick={handleGoogleSignIn}
         disabled={loading}
       >
-        <svg className="mr-2 size-4" viewBox="0 0 24 24">
+        <svg className="mr-2 size-4" viewBox="0 0 24 24" aria-hidden="true">
           <path
             fill="currentColor"
             d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -134,9 +143,9 @@ export function SignInForm() {
         Continue with Google
       </Button>
 
-      <p className="text-center text-sm text-amber-900/70">
+      <p className="text-center text-sm text-ink-500">
         Don&apos;t have an account?{" "}
-        <Link href="/signup" className="font-medium text-amber-950 hover:underline">
+        <Link href="/signup" className="font-medium text-ink-900 hover:underline">
           Sign up
         </Link>
       </p>

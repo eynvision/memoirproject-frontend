@@ -24,16 +24,18 @@ export function InviteCard({ memoirId }: { memoirId: string }) {
   }
 
   return (
-    <section className="rounded-3xl bg-[#F3E8DA] p-6 shadow-sm">
+    <section className="rounded-xl border border-paper-400 bg-paper-000 p-6 shadow-e1">
       <div className="mb-4 flex items-start gap-3">
-        <div className="flex size-10 items-center justify-center rounded-full bg-amber-900/10 text-amber-900">
-          <UserPlus className="size-5" />
+        <div className="grid size-10 shrink-0 place-items-center rounded-full bg-paper-200 text-ink-500">
+          <UserPlus className="size-5" strokeWidth={1.5} />
         </div>
         <div>
-          <h2 className="font-heading text-xl text-amber-950">Invite Contributors</h2>
-          <p className="mt-1 text-sm text-amber-900/75">
-            Share this link with family and friends so they can contribute stories and
-            photos to this memoir.
+          <h2 className="font-heading text-lg text-ink-900">
+            Invite contributors
+          </h2>
+          <p className="mt-1 text-[15px] text-ink-500">
+            Share this link with family and friends so they can contribute
+            stories and photos to this memoir.
           </p>
         </div>
       </div>
@@ -42,12 +44,9 @@ export function InviteCard({ memoirId }: { memoirId: string }) {
         <Input
           readOnly
           value={inviteUrl}
-          className="h-11 rounded-full border-amber-900/20 bg-[#FBEEDD]"
+          className="h-10 flex-1 bg-paper-000"
         />
-        <Button
-          onClick={copyLink}
-          className="rounded-xl bg-[#65402A] hover:bg-amber-950"
-        >
+        <Button variant="outline" onClick={copyLink}>
           {copied ? "Copied" : "Copy link"}
         </Button>
       </div>

@@ -89,8 +89,7 @@ export function VoiceRecorder({
 
         // Auto-attach on stop. User can still remove/re-record.
         onSaveRef.current(c);
-        // Reset UI immediately so the recorder is ready for another take
-        // without showing the "attach" prompt.
+        // Reset UI immediately so the recorder is ready for another take.
         setClip(null);
         setDurationMs(0);
         chunksRef.current = [];
@@ -157,14 +156,23 @@ export function VoiceRecorder({
   const seconds = Math.floor(durationMs / 1000);
 
   return (
-    <div className="space-y-3 rounded-xl border border-amber-900/20 bg-white p-4">
+    <div className="space-y-3 rounded-xl border border-paper-400 bg-paper-000 p-4">
       <div className="flex items-center gap-3">
-        <div className="flex size-12 items-center justify-center rounded-full bg-red-100">
+        <div className="grid size-11 shrink-0 place-items-center rounded-full bg-ember-100">
           <Mic
-            className={`size-5 ${state === "recording" ? "animate-pulse text-red-600" : "text-red-400"}`}
+            className={`size-5 ${
+              state === "recording"
+                ? "animate-pulse text-ember-600"
+                : "text-ember-500"
+            }`}
+            strokeWidth={1.5}
           />
         </div>
-        <div className="flex-1 text-sm font-medium text-amber-900">
+        <div
+          className={`flex-1 text-sm font-medium ${
+            state === "idle" ? "text-ink-500" : "text-ink-700"
+          }`}
+        >
           {state === "idle" && "Ready to record"}
           {state === "recording" && `Recording… ${formatTime(seconds)}`}
           {state === "paused" && `Paused at ${formatTime(seconds)}`}
@@ -175,26 +183,26 @@ export function VoiceRecorder({
 
       <div className="flex flex-wrap gap-2">
         {state === "idle" && (
-          <Button type="button" onClick={start} className="bg-[#65402A] hover:bg-amber-950">
-            <Mic className="size-4" /> Start Recording
+          <Button type="button" onClick={start} size="sm">
+            <Mic className="size-4" /> Start recording
           </Button>
         )}
         {state === "recording" && (
           <>
-            <Button type="button" onClick={pause} variant="outline">
+            <Button type="button" onClick={pause} variant="outline" size="sm">
               <Pause className="size-4" /> Pause
             </Button>
-            <Button type="button" onClick={stop} className="bg-[#65402A] hover:bg-amber-950">
+            <Button type="button" onClick={stop} size="sm">
               <Square className="size-4" /> Stop
             </Button>
           </>
         )}
         {state === "paused" && (
           <>
-            <Button type="button" onClick={resume} className="bg-[#65402A] hover:bg-amber-950">
+            <Button type="button" onClick={resume} size="sm">
               <Play className="size-4" /> Resume
             </Button>
-            <Button type="button" onClick={stop} className="bg-[#65402A] hover:bg-amber-950">
+            <Button type="button" onClick={stop} variant="outline" size="sm">
               <Square className="size-4" /> Stop
             </Button>
           </>

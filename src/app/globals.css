@@ -5,11 +5,49 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
+  /* ---------- Typography ---------- */
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, "SFMono-Regular", monospace;
+  --font-heading: var(--font-fraunces), Georgia, "Times New Roman", serif;
+
+  /* ---------- Paper (surfaces) ---------- */
+  --color-paper-000: #FFFDF9;
+  --color-paper-100: #FCF8F1;
+  --color-paper-200: #F6EFE3;
+  --color-paper-300: #EFE4D3;
+  --color-paper-400: #E2D3BC;
+
+  /* ---------- Ink (text + borders) ---------- */
+  --color-ink-900: #241A12;
+  --color-ink-700: #463527;
+  --color-ink-500: #6B5745;
+  --color-ink-400: #8E7B68;
+  --color-ink-300: #B2A290;
+
+  /* ---------- Accents ---------- */
+  --color-ember-600: #9C4526;
+  --color-ember-500: #B45230;
+  --color-ember-100: #F6E3D9;
+  --color-brass-500: #B08B4F;
+  --color-moss-500: #5C7A50;
+  --color-moss-100: #E6EDE1;
+  --color-ochre-500: #B8862F;
+  --color-ochre-100: #F6ECD5;
+  --color-clay-500: #A44A3C;
+  --color-clay-100: #F4E0DB;
+
+  /* ---------- Warm shadows ---------- */
+  --shadow-e1: 0 1px 2px rgba(58, 40, 28, 0.05);
+  --shadow-e2: 0 1px 2px rgba(58, 40, 28, 0.05),
+    0 8px 20px -12px rgba(58, 40, 28, 0.16);
+  --shadow-e3: 0 2px 4px rgba(58, 40, 28, 0.06),
+    0 20px 44px -20px rgba(58, 40, 28, 0.24);
+  --shadow-e-print: 0 2px 4px rgba(58, 40, 28, 0.12),
+    0 16px 32px -20px rgba(58, 40, 28, 0.4);
+
+  /* ---------- shadcn semantic mappings (kept) ---------- */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-league-spartan), sans-serif;
-  --font-mono: var(--font-geist-mono);
-  --font-heading: var(--font-chewy), cursive;
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -49,40 +87,43 @@
 }
 
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
+  /* Warm remap — primitives (Button, Input, Card) follow automatically */
+  --background: #FCF8F1;      /* paper-100 */
+  --foreground: #463527;      /* ink-700  */
+  --card: #FFFDF9;            /* paper-000 */
+  --card-foreground: #463527;
+  --popover: #FFFDF9;
+  --popover-foreground: #463527;
+  --primary: #B45230;         /* ember-500 */
+  --primary-foreground: #FFFDF9;
+  --secondary: #F6EFE3;       /* paper-200 */
+  --secondary-foreground: #463527;
+  --muted: #F6EFE3;
+  --muted-foreground: #6B5745;/* ink-500 */
+  --accent: #F6EFE3;
+  --accent-foreground: #463527;
+  --destructive: #A44A3C;     /* clay-500 */
+  --border: #E2D3BC;          /* paper-400 */
+  --input: #E2D3BC;
+  --ring: #B45230;
   --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+
+  --chart-1: #B45230;
+  --chart-2: #B08B4F;
+  --chart-3: #5C7A50;
+  --chart-4: #8E7B68;
+  --chart-5: #463527;
+  --sidebar: #FFFDF9;
+  --sidebar-foreground: #463527;
+  --sidebar-primary: #B45230;
+  --sidebar-primary-foreground: #FFFDF9;
+  --sidebar-accent: #F6EFE3;
+  --sidebar-accent-foreground: #463527;
+  --sidebar-border: #E2D3BC;
+  --sidebar-ring: #B45230;
 }
 
+/* Dark block kept (unused — no toggler ships) */
 .dark {
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);
@@ -121,10 +162,66 @@
   * {
     @apply border-border outline-ring/50;
   }
-  body {
-    @apply bg-background text-foreground font-sans;
-  }
   html {
     @apply font-sans;
   }
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+
+  /* Serif headings: Fraunces at 500, never heavier, balanced lines */
+  h1,
+  h2,
+  h3,
+  h4,
+  .font-heading {
+    font-optical-sizing: auto;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+  }
+
+  ::placeholder {
+    color: var(--color-ink-300);
+  }
+}
+
+/* Thin, warm scrollbars — never a tan track floating on the canvas */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-paper-400) transparent;
+}
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+*::-webkit-scrollbar-thumb {
+  background: var(--color-paper-400);
+  border-radius: 999px;
+}
+
+/* Atmosphere: soft brass glow + faint grain. Pointer-events none, purely visual. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    1100px 560px at 50% -8%,
+    rgba(176, 139, 79, 0.1),
+    transparent 70%
+  );
+}
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }

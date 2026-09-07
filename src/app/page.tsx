@@ -16,31 +16,31 @@ export default async function LandingPage() {
   const ctaHref = user ? "/memoirs" : "/onboarding";
 
   return (
-    <div className="min-h-screen bg-[#FDFBF7]">
+    <div className="min-h-screen bg-paper-100">
       <header className="px-8 py-6">
-        <h1 className="font-heading text-2xl font-bold text-amber-950">Memoir</h1>
+        <h1 className="font-heading text-[22px] font-medium text-ink-900">
+          Memoir
+        </h1>
       </header>
 
-      <main className="mx-auto max-w-6xl px-6 py-12">
+      <main className="mx-auto max-w-6xl px-6 pb-24 pt-16 md:pt-24">
         <section className="flex flex-col items-center justify-between gap-12 lg:flex-row">
           <div className="max-w-xl space-y-6">
-            <h2 className="font-heading text-5xl leading-tight text-amber-950 md:text-6xl">
-              Everyone Deserves to be remembered
+            <h2 className="font-heading text-5xl leading-[1.08] text-ink-900 md:text-[56px]">
+              Everyone deserves to be remembered.
             </h2>
-            <p className="text-sm font-semibold uppercase leading-relaxed tracking-widest text-amber-900/80">
-              BRING TOGETHER THE STORIES, PHOTOGRAPHS, VOICES, AND MOMENTS. WE TURN THEM INTO A MEMORY WORTH KEEPING FOR GENERATIONS.
+            <p className="max-w-[44ch] text-lg leading-relaxed text-ink-500">
+              Bring together the stories, photographs, voices, and moments —
+              and turn them into something worth keeping for generations.
             </p>
             <Link href={ctaHref} className="inline-block">
-              <Button
-                size="lg"
-                className="h-14 rounded-full bg-[#65402A] px-8 text-lg hover:bg-amber-950"
-              >
+              <Button size="lg" className="h-12 rounded-lg px-6 text-base">
                 Let&apos;s start preserving
               </Button>
             </Link>
           </div>
 
-          <div className="relative aspect-video w-full max-w-lg overflow-hidden rounded-2xl bg-amber-100 shadow-xl">
+          <div className="relative aspect-video w-full max-w-lg overflow-hidden rounded-xl bg-paper-200 shadow-e3">
             <Image
               src="/Couple.png"
               alt="Family memory"
@@ -51,19 +51,20 @@ export default async function LandingPage() {
           </div>
         </section>
 
-        <section className="mt-32 text-center">
-          <h3 className="font-heading text-4xl text-amber-950">
+        <section className="mt-24">
+          <h3 className="text-center font-heading text-3xl text-ink-900">
             How we preserve memories
           </h3>
 
           <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            <ProcessCard icon={Edit3} title="CREATE YOUR WORKSPACE" />
+            <ProcessCard number="01" icon={Edit3} title="Create your workspace" />
             <ProcessCard
+              number="02"
               icon={ImageIcon}
-              title="INVITE MEMBERS TO CONTRIBUTE MEMORIES"
+              title="Invite members to contribute memories"
             />
-            <ProcessCard icon={Sparkles} title="AI AGENTS ORGANIZES MEMORIES" />
-            <ProcessCard icon={BookOpen} title="GET YOUR MEMOIR" />
+            <ProcessCard number="03" icon={Sparkles} title="AI agents organize memories" />
+            <ProcessCard number="04" icon={BookOpen} title="Get your memoir" />
           </div>
         </section>
       </main>
@@ -71,15 +72,20 @@ export default async function LandingPage() {
   );
 }
 
-function ProcessCard({ icon: Icon, title }: { icon: LucideIcon; title: string }) {
+function ProcessCard({
+  number,
+  icon: Icon,
+  title,
+}: {
+  number: string;
+  icon: LucideIcon;
+  title: string;
+}) {
   return (
-    <div className="flex flex-col items-center justify-center gap-4 rounded-3xl bg-[#F3E8DA] p-8 text-center shadow-sm transition-transform hover:scale-105">
-      <div className="flex size-16 items-center justify-center rounded-full bg-amber-900/10">
-        <Icon className="size-8 text-amber-950" />
-      </div>
-      <h4 className="font-heading text-sm font-bold uppercase tracking-wider text-amber-950">
-        {title}
-      </h4>
+    <div className="flex h-full flex-col items-center justify-center gap-3 rounded-xl border border-paper-400 bg-paper-000 p-6 text-center shadow-e1 transition-shadow hover:shadow-e2">
+      <span className="text-xs tabular-nums text-ink-400">{number}</span>
+      <Icon className="size-7 text-ink-500" strokeWidth={1.5} />
+      <h4 className="text-base font-medium leading-snug text-ink-700">{title}</h4>
     </div>
   );
 }

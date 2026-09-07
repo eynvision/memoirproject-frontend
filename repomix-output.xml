@@ -32,7 +32,7 @@ The content is organized as follows:
 <notes>
 - Some files may have been excluded based on .gitignore rules and Repomix's configuration
 - Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
-- Only files matching these patterns are included: src/hooks/**, src/lib/**, src/utils/**
+- Only files matching these patterns are included: src/lib/**
 - Files matching patterns in .gitignore are excluded
 - Files matching default ignore patterns are excluded
 - Files are sorted by Git change count (files with more changes are at the bottom)
@@ -42,8 +42,6 @@ The content is organized as follows:
 
 <directory_structure>
 src/
-  hooks/
-    README.md
   lib/
     api/
       client.test.ts
@@ -60,62 +58,10 @@ src/
       server.ts
     README.md
     utils.ts
-  utils/
-    README.md
 </directory_structure>
 
 <files>
 This section contains the contents of the repository's files.
-
-<file path="src/hooks/README.md">
-# src/hooks
-
-React hooks shared across features. **Nothing here knows about your domain**, and nothing here fetches
-data.
-
-This directory is intentionally empty. It has no backend twin — it exists because React has a unit of
-reuse that Python does not. Add a hook the first time a **second** feature needs it; until then it lives
-in the feature that uses it.
-
-## What belongs here
-
-Generic, reusable behaviour tied to the browser or to React's lifecycle:
-
-- `useDebouncedValue.ts` — delay a value until typing stops
-- `useMediaQuery.ts` — track a breakpoint in JS
-- `useLocalStorage.ts` — read and write a persisted value
-- `useMounted.ts` — guard against hydration mismatches
-- `useCopyToClipboard.ts`, `useInterval.ts`, `useOnClickOutside.ts`
-
-The shadcn CLI also targets this directory (`components.json` maps the `@/hooks` alias here), so a
-primitive you add may drop a hook in.
-
-## Conventions
-
-- **One hook per file, named exactly after the hook** — `useDebouncedValue.ts` exports
-  `useDebouncedValue`.
-- **Start every file with `"use client"`.** These hooks use state, effects, or browser APIs, so they can
-  only run in a client component. The directive on the hook means a consumer cannot import it into a
-  server component by accident.
-- **Colocate the test:** `useDebouncedValue.ts` and `useDebouncedValue.test.ts`, using
-  `renderHook` from `@testing-library/react`.
-- **Return a tuple or an object, not both across the codebase.** Pick the shape that reads best at the
-  call site and stay consistent within a hook's lifetime.
-
-## What does not belong here
-
-| Not this | It goes in |
-| --- | --- |
-| Data fetching, TanStack Query hooks, cache keys | `features/<name>/hooks.ts` |
-| A hook only one feature uses | `features/<name>/hooks.ts` |
-| A hook whose props or return value name a domain concept | `features/<name>/hooks.ts` |
-| A pure function with no React in it | `src/utils/` |
-| A provider every route needs | `src/app/providers.tsx` |
-
-The distinction that matters: **`features/<name>/hooks.ts` is the feature's client *data path*** — it
-calls the feature's `api.ts` and owns its cache keys. This directory is generic React plumbing that
-never touches the network. A hook here should not import from `@/features/` or `@/lib/api/` at all.
-</file>
 
 <file path="src/lib/api/client.test.ts">
 /**
@@ -605,53 +551,6 @@ export function cn(...inputs: ClassValue[]) {
 }
 </file>
 
-<file path="src/utils/README.md">
-# src/utils
-
-The direct twin of the backend's `src/utils/`: **generic helpers that are not tied to any feature.**
-
-This directory is intentionally empty. Add a file the first time a helper is needed by a **second**
-caller — not before.
-
-## What belongs here
-
-Pure functions. Same input, same output, no side effects. The test is whether you could paste the file
-into an unrelated project and have it work untouched:
-
-- `date.ts` — `formatRelativeTime`, `toIsoDate`, `isSameDay`
-- `string.ts` — `truncate`, `slugify`, `initials`, `titleCase`
-- `number.ts` — `formatBytes`, `clamp`, `formatCurrency`
-- `array.ts` — `groupBy`, `chunk`, `uniqueBy`
-
-One file per topic, named for the topic. Export named functions — no default exports. Put the test
-beside it: `date.ts` and `date.test.ts`. Pure functions are the cheapest thing in the repo to test, so
-there is no excuse for an untested helper here.
-
-## What does not belong here
-
-| Not this | It goes in |
-| --- | --- |
-| Anything that calls `fetch` or touches the network | `lib/api/` |
-| Anything that reads `process.env` | `lib/config/env.ts` |
-| Anything importing React, or a hook | `src/hooks/` or the feature |
-| Anything that knows what a memoir, user, or greeting is | `src/features/<name>/` |
-| A helper only one feature uses | `features/<name>/utils.ts` |
-
-## utils vs. lib
-
-Both hold code that no single feature owns, and the line between them is dependencies:
-
-- **`src/lib/`** is *infrastructure*. It has dependencies, holds configuration or state, and talks to
-  the outside world — the HTTP client, validated env, the query client. You mock it in tests.
-- **`src/utils/`** is *pure functions*. No dependencies, no configuration, no I/O. You never mock it;
-  you just call it.
-
-Rule of thumb: if it has to be configured, awaited, or mocked, it is `lib/`.
-
-> **Do not confuse this directory with `src/lib/utils.ts`.** That file is shadcn's `cn` helper, managed
-> by the shadcn CLI — leave it where it is and do not move it here.
-</file>
-
 <file path="src/lib/api/client.ts">
 // File: src/lib/api/client.ts
 
@@ -757,6 +656,54 @@ export async function apiRequest<TSchema extends ZodType>({
 
   return result.data;
 }
+</file>
+
+<file path="src/lib/README.md">
+# src/lib
+
+App-wide infrastructure. Covers the ground the backend splits between `src/integrations/`
+(talking to the outside world) and `src/core/` (app setup).
+
+Code here knows nothing about any particular feature. If it mentions a greeting, a user, or an
+order, it belongs in `src/features/` instead.
+
+## Contents
+
+| Path | Role | Backend equivalent |
+| --- | --- | --- |
+| `api/client.ts` | The **only** module that calls `fetch`. Base URL, timeouts, error normalization, response validation. | `integrations/llm_client.py` |
+| `api/errors.ts` | The `ApiError` taxonomy: `network`, `http`, `contract`. | — |
+| `config/env.ts` | Zod-validated environment variables. Fails at boot, not at runtime. | `core/` |
+| `query/client.ts` | TanStack Query defaults: stale time, retry policy. | — |
+| `utils.ts` | shadcn's `cn` helper. Managed by the shadcn CLI — leave it alone. | — |
+
+## lib vs. utils vs. hooks
+
+Three directories hold code no single feature owns. The line between them is dependencies:
+
+| Directory | Holds | Test |
+| --- | --- | --- |
+| `lib/` | Infrastructure — dependencies, configuration, state, I/O | You mock it in tests |
+| `utils/` | Pure functions — no dependencies, no I/O | You just call it |
+| `hooks/` | Generic React hooks — state, effects, browser APIs, no fetching | It starts with `"use client"` |
+
+Rule of thumb: if it has to be configured, awaited, or mocked, it belongs here in `lib/`.
+
+Note that `utils.ts` in this directory is shadcn's `cn` helper and is unrelated to `src/utils/`. Leave
+it where it is.
+
+## Adding to this directory
+
+Ask first whether it is really app-wide. A helper used by one feature belongs in that feature.
+
+Good reasons to add here:
+
+- A second external service the app talks to (analytics, file uploads) → new folder under `lib/`,
+  built the way `api/` is: one module owning all contact with that service.
+- App-wide configuration or a provider used by every route.
+
+When authentication arrives, the token belongs in `api/client.ts` — the single place requests are
+built — and nowhere else.
 </file>
 
 <file path="src/lib/supabase/middleware.ts">
@@ -878,54 +825,6 @@ export async function updateSession(request: NextRequest) {
   // Always return the response so refreshed auth cookies reach the browser.
   return supabaseResponse;
 }
-</file>
-
-<file path="src/lib/README.md">
-# src/lib
-
-App-wide infrastructure. Covers the ground the backend splits between `src/integrations/`
-(talking to the outside world) and `src/core/` (app setup).
-
-Code here knows nothing about any particular feature. If it mentions a greeting, a user, or an
-order, it belongs in `src/features/` instead.
-
-## Contents
-
-| Path | Role | Backend equivalent |
-| --- | --- | --- |
-| `api/client.ts` | The **only** module that calls `fetch`. Base URL, timeouts, error normalization, response validation. | `integrations/llm_client.py` |
-| `api/errors.ts` | The `ApiError` taxonomy: `network`, `http`, `contract`. | — |
-| `config/env.ts` | Zod-validated environment variables. Fails at boot, not at runtime. | `core/` |
-| `query/client.ts` | TanStack Query defaults: stale time, retry policy. | — |
-| `utils.ts` | shadcn's `cn` helper. Managed by the shadcn CLI — leave it alone. | — |
-
-## lib vs. utils vs. hooks
-
-Three directories hold code no single feature owns. The line between them is dependencies:
-
-| Directory | Holds | Test |
-| --- | --- | --- |
-| `lib/` | Infrastructure — dependencies, configuration, state, I/O | You mock it in tests |
-| `utils/` | Pure functions — no dependencies, no I/O | You just call it |
-| `hooks/` | Generic React hooks — state, effects, browser APIs, no fetching | It starts with `"use client"` |
-
-Rule of thumb: if it has to be configured, awaited, or mocked, it belongs here in `lib/`.
-
-Note that `utils.ts` in this directory is shadcn's `cn` helper and is unrelated to `src/utils/`. Leave
-it where it is.
-
-## Adding to this directory
-
-Ask first whether it is really app-wide. A helper used by one feature belongs in that feature.
-
-Good reasons to add here:
-
-- A second external service the app talks to (analytics, file uploads) → new folder under `lib/`,
-  built the way `api/` is: one module owning all contact with that service.
-- App-wide configuration or a provider used by every route.
-
-When authentication arrives, the token belongs in `api/client.ts` — the single place requests are
-built — and nowhere else.
 </file>
 
 </files>

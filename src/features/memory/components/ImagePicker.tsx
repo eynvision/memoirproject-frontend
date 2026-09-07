@@ -32,11 +32,11 @@ export function ImagePicker({
 
     for (const file of Array.from(files).slice(0, remaining)) {
       if (!ALLOWED_PHOTO_MIME.includes(file.type as (typeof ALLOWED_PHOTO_MIME)[number])) {
-        alert(`${file.name}: only JPEG, PNG, or WebP allowed.`);
+        alert(`${file.name}: only JPEG, PNG, or WebP files are allowed.`);
         continue;
       }
       if (file.size > MAX_PHOTO_SIZE_BYTES) {
-        alert(`${file.name}: exceeds 10MB.`);
+        alert(`${file.name}: is larger than 10 MB.`);
         continue;
       }
       next.push({
@@ -62,11 +62,13 @@ export function ImagePicker({
 
   return (
     <div className="space-y-3">
-      <label className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-amber-900/30 py-8 text-center text-sm text-amber-900/70 hover:bg-amber-50">
-        <UploadCloud className="size-8" />
-        <span className="font-medium">Upload a photograph</span>
-        <span className="text-xs">
-          JPEG, PNG, or WebP · up to {MAX_PHOTOS_PER_MEMORY} photographs
+      <label className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-[1.5px] border-dashed border-paper-400 py-8 text-center transition-colors hover:bg-paper-100">
+        <UploadCloud className="size-8 text-ink-400" strokeWidth={1.5} />
+        <span className="text-[15px] font-medium text-ink-700">
+          Upload a photograph
+        </span>
+        <span className="text-[13px] text-ink-400">
+          JPEG, PNG, or WebP · Up to {MAX_PHOTOS_PER_MEMORY} photos
         </span>
         <input
           ref={inputRef}
@@ -82,24 +84,28 @@ export function ImagePicker({
         <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
           {images.map((img, i) => (
             <div key={i} className="space-y-2">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={img.previewUrl}
-                alt=""
-                className="h-32 w-full rounded-lg object-cover"
-              />
+              {/* White print matte around every thumbnail */}
+              <div className="rounded-md bg-white p-1 shadow-e1 ring-1 ring-paper-400">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={img.previewUrl}
+                  alt=""
+                  className="h-20 w-full rounded-sm object-cover"
+                />
+              </div>
               <input
                 type="text"
                 value={img.caption}
                 onChange={(e) => updateCaption(i, e.target.value)}
                 placeholder="Optional caption"
-                className="w-full rounded-md border border-amber-900/20 px-2 py-1 text-xs"
+                className="w-full rounded-lg border border-paper-400 bg-paper-000 px-2 py-1.5 text-xs text-ink-700 placeholder:text-ink-300 focus:outline-none focus:ring-2 focus:ring-ember-500/20"
               />
               <Button
                 type="button"
-                variant="destructive"
+                variant="ghost"
                 size="sm"
                 onClick={() => remove(i)}
+                className="text-ink-500 hover:bg-clay-100 hover:text-clay-500"
               >
                 Remove
               </Button>

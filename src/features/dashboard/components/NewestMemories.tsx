@@ -1,7 +1,7 @@
 import Link from "next/link";
 
-import { Button } from "@/components/ui/button";
 import type { Memory } from "@/features/memory/schemas";
+import { formatDate } from "@/utils/date";
 
 export function NewestMemories({
   memoirId,
@@ -11,34 +11,42 @@ export function NewestMemories({
   memories: Memory[];
 }) {
   return (
-    <section className="rounded-3xl bg-[#F3E8DA] p-6 shadow-sm">
-      <h2 className="mb-4 font-heading text-xl text-amber-950">Newest memories</h2>
+    <section className="overflow-hidden rounded-xl border border-paper-400 bg-paper-000 shadow-e1">
+      <h2 className="px-6 pt-5 font-heading text-lg text-ink-900">
+        Newest memories
+      </h2>
 
-      <div className="space-y-3">
+      <div className="mt-3">
         {memories.length === 0 ? (
-          <div className="rounded-2xl bg-white p-5 text-sm text-amber-900/70">
+          <div className="border-t border-paper-400 px-6 py-8 text-sm text-ink-500">
             No memories yet. Add the first one from the Memories tab.
           </div>
         ) : (
           memories.map((memory) => (
-            <article key={memory.id} className="rounded-2xl bg-white p-5">
-              <h3 className="font-heading text-lg text-amber-950">
+            <article
+              key={memory.id}
+              className="border-t border-paper-400 px-6 py-4"
+            >
+              <h3 className="font-heading text-base text-ink-900">
                 {memory.title || "Untitled memory"}
               </h3>
-              <p className="mt-2 line-clamp-2 text-sm text-amber-900/75">
+              <p className="mt-1 line-clamp-2 text-sm text-ink-500">
                 {memory.body_text || "No description"}
               </p>
-              <p className="mt-3 text-xs text-amber-900/60">Uploaded By You</p>
+              <p className="mt-2 text-xs tabular-nums text-ink-400">
+                By you · {formatDate(memory.created_at)}
+              </p>
             </article>
           ))
         )}
       </div>
 
-      <div className="mt-5 flex justify-end">
-        <Link href={`/dashboard/${memoirId}/memories`}>
-          <Button className="rounded-xl bg-[#65402A] hover:bg-amber-950">
-            See All memories
-          </Button>
+      <div className="flex justify-end border-t border-paper-400 px-6 py-4">
+        <Link
+          href={`/dashboard/${memoirId}/memories`}
+          className="text-sm font-medium text-ember-600 transition-colors hover:text-ember-500"
+        >
+          See all memories →
         </Link>
       </div>
     </section>

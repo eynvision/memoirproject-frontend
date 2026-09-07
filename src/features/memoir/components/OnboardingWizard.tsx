@@ -22,10 +22,10 @@ import {
 
 const RELATIONS: { label: string; value: RelationshipGroup }[] = [
   { label: "Parent", value: "parent" },
-  { label: "GrandParent", value: "grandchild" },
-  { label: "Friend", value: "friend" },
-  { label: "Sibling", value: "sibling" },
+  { label: "Grandparent", value: "grandchild" },
   { label: "Spouse", value: "spouse_partner" },
+  { label: "Sibling", value: "sibling" },
+  { label: "Friend", value: "friend" },
   { label: "Other", value: "other" },
 ];
 
@@ -197,41 +197,31 @@ export function OnboardingWizard() {
   }
 
   return (
-    <div className="mx-auto max-w-2xl px-6 py-12">
-      <div className="mb-12 flex items-center justify-center gap-4">
-        <div
-          className={`flex size-10 items-center justify-center rounded-full font-heading text-lg ${
-            step === 1
-              ? "bg-amber-950 text-amber-50"
-              : "bg-amber-900/10 text-amber-900"
+    <div className="mx-auto max-w-2xl px-6 pt-[8vh] pb-24">
+      {/* Stepper */}
+      <div className="mb-10 flex items-center justify-center gap-3">
+        <StepDot n={1} active={step === 1} />
+        <span
+          className={`h-0.5 w-14 rounded-full transition-colors ${
+            step === 2 ? "bg-brass-500" : "bg-paper-400"
           }`}
-        >
-          1
-        </div>
-        <div className="h-px w-16 bg-amber-900/20" />
-        <div
-          className={`flex size-10 items-center justify-center rounded-full font-heading text-lg ${
-            step === 2
-              ? "bg-amber-950 text-amber-50"
-              : "bg-amber-900/10 text-amber-900"
-          }`}
-        >
-          2
-        </div>
+        />
+        <StepDot n={2} active={step === 2} />
       </div>
 
       {step === 1 && (
         <div className="animate-in fade-in slide-in-from-bottom-4 space-y-10 text-center">
-          <div className="space-y-2">
-            <h1 className="font-heading text-4xl text-amber-950">
+          <div className="space-y-3">
+            <h1 className="font-heading text-4xl text-ink-900 md:text-[40px]">
               Who is this memoir for?
             </h1>
-            <p className="text-amber-900/70">
-              Select the relationship with the person you want to preserve memories
+            <p className="text-[17px] text-ink-500">
+              Choose your relationship to the person whose memories
+              you&apos;re preserving.
             </p>
           </div>
 
-          <div className="mx-auto grid max-w-xl grid-cols-2 gap-4 md:grid-cols-3">
+          <div className="mx-auto grid max-w-[600px] grid-cols-2 gap-4 md:grid-cols-3">
             {RELATIONS.map((rel) => (
               <button
                 key={rel.value}
@@ -240,10 +230,10 @@ export function OnboardingWizard() {
                   setRelationship(rel.value);
                   setValue("relationship", rel.value);
                 }}
-                className={`rounded-xl border py-8 text-lg font-medium transition-all ${
+                className={`min-h-[72px] rounded-xl border px-4 py-6 text-base font-medium transition-all ${
                   relationship === rel.value
-                    ? "border-amber-950 bg-amber-50 text-amber-950 shadow-sm"
-                    : "border-amber-900/10 bg-white text-amber-900/70 hover:border-amber-900/30 hover:bg-amber-50"
+                    ? "border-ember-500 bg-ember-100 text-ink-900 shadow-e1"
+                    : "border-paper-400 bg-paper-000 text-ink-500 hover:border-ink-300 hover:text-ink-700"
                 }`}
               >
                 {rel.label}
@@ -253,7 +243,7 @@ export function OnboardingWizard() {
 
           <Button
             size="lg"
-            className="w-48 rounded-full bg-[#65402A]"
+            className="h-12 px-10"
             disabled={!relationship}
             onClick={() => setStep(2)}
           >
@@ -265,63 +255,75 @@ export function OnboardingWizard() {
       {step === 2 && (
         <form
           onSubmit={handleSubmit(onSubmit)}
-          className="animate-in fade-in slide-in-from-bottom-4 space-y-10"
+          className="animate-in fade-in slide-in-from-bottom-4 space-y-8"
         >
-          <div className="grid gap-8 md:grid-cols-3">
-            <div className="space-y-3">
-              <Label className="font-heading text-2xl text-amber-950">
-                Enter their name
+          <div className="text-center">
+            <h1 className="font-heading text-4xl text-ink-900 md:text-[40px]">
+              Tell us about them
+            </h1>
+          </div>
+
+          <div className="mx-auto w-full max-w-[480px] space-y-6">
+            <div className="space-y-2">
+              <Label
+                htmlFor="subject_name"
+                className="text-sm font-medium text-ink-700"
+              >
+                Their name
               </Label>
               <Input
+                id="subject_name"
                 {...register("subject_name", { required: true })}
-                placeholder="Enter their name"
-                className="h-24 rounded-xl border-amber-900/30 bg-white text-lg"
+                placeholder="e.g. Amina Khan"
+                className="h-12 bg-paper-000 text-lg"
               />
             </div>
 
-            <div className="space-y-3">
-              <Label className="font-heading text-2xl text-amber-950">
-                Date of birth
+            <div className="space-y-2">
+              <Label
+                htmlFor="birth_year"
+                className="text-sm font-medium text-ink-700"
+              >
+                Year of birth
               </Label>
               <Input
+                id="birth_year"
                 {...register("birth_year")}
                 type="number"
                 min={1800}
                 max={2100}
-                placeholder="Enter year"
-                className="h-24 rounded-xl border-amber-900/30 bg-white text-center text-lg"
+                placeholder="e.g. 1948"
+                className="h-12 bg-paper-000"
               />
             </div>
 
-            <div className="space-y-3 space-x-10">
-              <Label className="font-heading text-2xl text-amber-950">
-                Lifespan Until:
+            <div className="space-y-2">
+              <Label className="text-sm font-medium text-ink-700">
+                Their story continues until
               </Label>
-              <div className="space-y-4 rounded-xl border border-amber-900/10 bg-white p-4">
+              <div className="space-y-4 rounded-xl border border-paper-400 bg-paper-000 p-4">
                 <label className="flex cursor-pointer items-center gap-3">
                   <input
                     type="radio"
-                    className="size-5 accent-[#65402A]"
+                    name="lifespan"
+                    className="size-5 accent-ember-500"
                     checked={isLiving}
                     onChange={() => setValue("is_living", true)}
                   />
-                  <span className="font-medium text-amber-950">Present</span>
+                  <span className="font-medium text-ink-700">Present day</span>
                 </label>
 
                 <label className="flex cursor-pointer flex-col gap-3">
                   <div className="flex items-center gap-3">
                     <input
                       type="radio"
-                      className="size-5 accent-[#65402A]"
+                      name="lifespan"
+                      className="size-5 accent-ember-500"
                       checked={!isLiving}
                       onChange={() => setValue("is_living", false)}
                     />
-                    <span
-                      className={`font-medium ${
-                        !isLiving ? "text-amber-950" : "text-amber-900/40"
-                      }`}
-                    >
-                      Specific Date
+                    <span className="font-medium text-ink-700">
+                      A specific year
                     </span>
                   </div>
 
@@ -331,36 +333,35 @@ export function OnboardingWizard() {
                       type="number"
                       min={1800}
                       max={2100}
-                      placeholder="Enter year"
-                      className="h-12 rounded-lg border-amber-900/30 bg-amber-50 text-center"
+                      placeholder="e.g. 2005"
+                      className="h-11 bg-paper-100 text-center"
                     />
                   )}
                 </label>
               </div>
             </div>
+
+            {createError && (
+              <div
+                className="rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive"
+                role="alert"
+              >
+                {createError}
+              </div>
+            )}
+
+            {authenticated && pendingCreate && !createError && (
+              <p className="text-center text-sm text-ink-500">
+                Your account is ready. Creating your memoir workspace…
+              </p>
+            )}
           </div>
 
-          {createError && (
-            <div
-              className="rounded-lg border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive"
-              role="alert"
-            >
-              {createError}
-            </div>
-          )}
-
-          {authenticated && pendingCreate && !createError && (
-            <p className="text-center text-sm text-amber-900/70">
-              Your account is ready. Creating your memoir workspace…
-            </p>
-          )}
-
-          <div className="flex justify-center gap-4">
+          <div className="flex items-center justify-center gap-3 pt-2">
             <Button
               type="button"
-              variant="outline"
+              variant="ghost"
               size="lg"
-              className="rounded-full"
               onClick={() => setStep(1)}
               disabled={create.isPending}
             >
@@ -369,18 +370,30 @@ export function OnboardingWizard() {
             <Button
               type="submit"
               size="lg"
-              className="rounded-full bg-[#65402A]"
+              className="h-12 px-8"
               disabled={
                 !subjectName.trim() ||
                 create.isPending ||
                 !hydrated
               }
             >
-              {create.isPending ? "Creating..." : "Create Workspace"}
+              {create.isPending ? "Creating…" : "Create workspace"}
             </Button>
           </div>
         </form>
       )}
     </div>
+  );
+}
+
+function StepDot({ n, active }: { n: number; active: boolean }) {
+  return (
+    <span
+      className={`grid size-7 place-items-center rounded-full text-sm font-medium transition-colors ${
+        active ? "bg-ink-900 text-paper-000" : "bg-paper-300 text-ink-400"
+      }`}
+    >
+      {n}
+    </span>
   );
 }

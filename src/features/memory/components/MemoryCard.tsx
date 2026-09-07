@@ -1,9 +1,11 @@
 "use client";
 
-import { Pencil, Volume2 } from "lucide-react";
+import { useRef, useState } from "react";
+import { Pencil, Play, Pause } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import type { Memory } from "@/features/memory/schemas";
+import { formatDate } from "@/utils/date";
 
 export function MemoryCard({
   memory,
@@ -16,19 +18,14 @@ export function MemoryCard({
 }) {
   const firstPhoto = memory.media.find((m) => m.kind === "photo");
   const firstAudio = memory.media.find((m) => m.kind === "audio");
-  const dateStr = new Date(memory.created_at).toLocaleDateString();
-
-  const durationSec = firstAudio?.duration_ms
-    ? Math.round(firstAudio.duration_ms / 1000)
-    : null;
 
   const photoCount = memory.media.filter((m) => m.kind === "photo").length;
   const audioCount = memory.media.filter((m) => m.kind === "audio").length;
 
   return (
-    <article className="flex flex-col rounded-2xl bg-[#F3E8DA] p-5 shadow-sm">
+    <article className="mb-6 break-inside-avoid rounded-xl border border-paper-400 bg-paper-000 p-5 shadow-e1">
       <div className="flex items-start justify-between gap-2">
-        <h3 className="font-heading text-xl text-amber-950">
+        <h3 className="font-heading text-[19px] leading-snug text-ink-900">
           {memory.title || "Untitled memory"}
         </h3>
         {onEdit && (
@@ -37,7 +34,6 @@ export function MemoryCard({
             size="sm"
             variant="outline"
             onClick={() => onEdit(memory)}
-            className="rounded-lg border-amber-900/20 bg-white/60 text-amber-900 hover:bg-white"
           >
             <Pencil className="size-3.5" /> Edit
           </Button>
@@ -45,16 +41,18 @@ export function MemoryCard({
       </div>
 
       {firstPhoto && (
-        <div className="mt-3 overflow-hidden rounded-xl">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={firstPhoto.playback_url}
-            alt={firstPhoto.caption ?? memory.title ?? "Memory photo"}
-            loading="lazy"
-            className="h-48 w-full object-cover"
-          />
+        <div className="mt-4">
+          <div className="overflow-hidden rounded-md bg-white p-1 shadow-e1">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={firstPhoto.playback_url}
+              alt={firstPhoto.caption ?? memory.title ?? "Memory photo"}
+              loading="lazy"
+              className="aspect-[4/3] w-full rounded-sm object-cover"
+            />
+          </div>
           {photoCount > 1 && (
-            <p className="mt-1 text-xs text-amber-900/60">
+            <p className="mt-1.5 text-xs text-ink-400">
               +{photoCount - 1} more photograph{photoCount - 1 > 1 ? "s" : ""}
             </p>
           )}
@@ -62,42 +60,105 @@ export function MemoryCard({
       )}
 
       {firstAudio && (
-        <div className="mt-3 space-y-2 rounded-xl border border-amber-900/10 bg-white/80 p-3 shadow-sm">
-          <div className="flex items-center justify-between px-1 text-xs font-semibold text-amber-950">
-            <span className="flex items-center gap-1.5">
-              <Volume2 className="size-4 text-amber-900" /> Voice Recording
-              {audioCount > 1 && (
-                <span className="text-amber-900/60">
-                  · +{audioCount - 1} more
-                </span>
-              )}
-            </span>
-            {durationSec !== null && (
-              <span className="rounded-md bg-amber-900/10 px-2 py-0.5 text-amber-900">
-                {formatTime(durationSec)}
-              </span>
-            )}
-          </div>
-          <audio
-            controls
-            preload="metadata"
+        <div className="mt-4">
+          <AudioPlayer
             src={firstAudio.playback_url}
-            className="h-10 w-full"
+            durationMs={firstAudio.duration_ms}
           />
+          {audioCount > 1 && (
+            <p className="mt-1.5 text-xs text-ink-400">
+              +{audioCount - 1} more recording{audioCount - 1 > 1 ? "s" : ""}
+            </p>
+          )}
         </div>
       )}
 
       {memory.body_text && (
-        <p className="mt-3 line-clamp-3 text-sm leading-relaxed text-amber-900/85">
+        <p className="mt-3 line-clamp-3 text-[15px] leading-relaxed text-ink-500">
           {memory.body_text}
         </p>
       )}
 
-      <div className="mt-4 flex items-center justify-between border-t border-amber-900/15 pt-3 text-xs text-amber-900/70">
-        <span>{currentUserId === "owner" ? "By You" : "By Contributor"}</span>
-        <span>{dateStr}</span>
+      <div className="mt-4 flex items-center justify-between border-t border-paper-400 pt-3 text-[13px] tabular-nums text-ink-400">
+        <span>{currentUserId === "owner" ? "By you" : "By contributor"}</span>
+        <span>{formatDate(memory.created_at)}</span>
       </div>
     </article>
+  );
+}
+
+/**
+ * Minimal presentational player: round play button + flat progress track.
+ * Replaces the browser-native <audio controls> chrome, which is the single
+ * most "dashboard-looking" element on these cards.
+ */
+function AudioPlayer({
+  src,
+  durationMs,
+}: {
+  src: string;
+  durationMs?: number | null;
+}) {
+  const audioRef = useRef<HTMLAudioElement>(null);
+  const [playing, setPlaying] = useState(false);
+  const [progress, setProgress] = useState(0); // 0..1
+
+  function toggle() {
+    const el = audioRef.current;
+    if (!el) return;
+    if (playing) {
+      el.pause();
+      return;
+    }
+    el.play().catch(() => {
+      // Autoplay/route issues — silently ignore; user can retry.
+    });
+  }
+
+  const totalSeconds = durationMs ? Math.round(durationMs / 1000) : null;
+
+  return (
+    <div className="flex items-center gap-3 rounded-lg border border-paper-400 bg-paper-100/60 p-2.5">
+      <button
+        type="button"
+        onClick={toggle}
+        aria-label={playing ? "Pause recording" : "Play recording"}
+        className="grid size-10 shrink-0 place-items-center rounded-full bg-ember-100 text-ember-600 transition-colors hover:bg-ember-500 hover:text-paper-000"
+      >
+        {playing ? <Pause className="size-4" /> : <Play className="size-4" />}
+      </button>
+
+      <div className="h-0.5 flex-1 overflow-hidden rounded-full bg-paper-400">
+        <div
+          className="h-full rounded-full bg-ember-500 transition-[width] duration-150"
+          style={{ width: `${Math.round(progress * 100)}%` }}
+        />
+      </div>
+
+      {totalSeconds !== null && (
+        <span className="shrink-0 text-xs tabular-nums text-ink-400">
+          {formatTime(totalSeconds)}
+        </span>
+      )}
+
+      <audio
+        ref={audioRef}
+        src={src}
+        preload="metadata"
+        className="hidden"
+        onPlay={() => setPlaying(true)}
+        onPause={() => setPlaying(false)}
+        onEnded={(e) => {
+          setPlaying(false);
+          setProgress(0);
+          e.currentTarget.currentTime = 0;
+        }}
+        onTimeUpdate={(e) => {
+          const el = e.currentTarget;
+          if (el.duration > 0) setProgress(el.currentTime / el.duration);
+        }}
+      />
+    </div>
   );
 }
 
