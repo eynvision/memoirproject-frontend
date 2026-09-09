@@ -1,7 +1,5 @@
 "use client";
-
 import { useState } from "react";
-
 import { Button } from "@/components/ui/button";
 import {
   useMemoriesQuery,
@@ -15,13 +13,14 @@ import type { Memory } from "@/features/memory/schemas";
 export function MemoriesPageClient({
   memoirId,
   currentUserId,
+  isPublished,
 }: {
   memoirId: string;
   currentUserId: string;
+  isPublished: boolean;
 }) {
   const { data, isLoading, isError, refetch } = useMemoriesQuery(memoirId);
   const create = useCreateMemory(memoirId);
-
   const [composing, setComposing] = useState(false);
   const [editingMemory, setEditingMemory] = useState<Memory | null>(null);
   const [draftMemoryId, setDraftMemoryId] = useState<string | null>(null);
@@ -29,6 +28,7 @@ export function MemoriesPageClient({
   const submitted = (data?.memories ?? []).filter((m) => m.status === "submitted");
 
   async function handleAddMemory() {
+    if (isPublished) return;
     if (draftMemoryId) {
       setComposing(true);
       return;
@@ -67,19 +67,11 @@ export function MemoriesPageClient({
   if (submitted.length === 0) {
     return (
       <>
-        <EmptyState onAdd={handleAddMemory} />
+        <EmptyState onAdd={handleAddMemory} isPublished={isPublished} />
         {composing && draftMemoryId && (
           <MemoryComposer
             memoirId={memoirId}
             memoryId={draftMemoryId}
-            onClose={closeComposer}
-          />
-        )}
-        {editingMemory && (
-          <MemoryComposer
-            key={editingMemory.id}
-            memoirId={memoirId}
-            memory={editingMemory}
             onClose={closeComposer}
           />
         )}
@@ -89,22 +81,22 @@ export function MemoriesPageClient({
 
   return (
     <div className="space-y-8">
-      <div className="flex justify-end">
-        <Button onClick={handleAddMemory}>Add a memory</Button>
-      </div>
-
-      {/* Masonry: documents scroll, cards keep their natural height */}
+      {!isPublished && (
+        <div className="flex justify-end">
+          <Button onClick={handleAddMemory}>Add a memory</Button>
+        </div>
+      )}
       <div className="columns-1 gap-6 md:columns-2 xl:columns-3">
         {submitted.map((memory) => (
           <MemoryCard
             key={memory.id}
             memory={memory}
             currentUserId={currentUserId}
-            onEdit={(m) => setEditingMemory(m)}
+            isPublished={isPublished}
+            onEdit={!isPublished ? (m) => setEditingMemory(m) : undefined}
           />
         ))}
       </div>
-
       {composing && draftMemoryId && (
         <MemoryComposer
           memoirId={memoirId}
@@ -112,7 +104,6 @@ export function MemoriesPageClient({
           onClose={closeComposer}
         />
       )}
-
       {editingMemory && (
         <MemoryComposer
           key={editingMemory.id}

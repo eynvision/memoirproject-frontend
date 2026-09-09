@@ -1,11 +1,11 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import type { Memoir } from "@/features/memoir/schemas";
+import { ShareLinkButton } from "@/features/reader/components/ShareLinkButton";
 import { PublishButton } from "./PublishButton";
 
 export function ProfileCard({ memoir }: { memoir: Memoir }) {
   const isPublished = memoir.status === "published";
-
   const initials = memoir.subject_name
     .trim()
     .split(/\s+/)
@@ -17,11 +17,9 @@ export function ProfileCard({ memoir }: { memoir: Memoir }) {
     <section className="rounded-xl border border-paper-400 bg-paper-000 p-7 shadow-e1">
       <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
         <div className="flex gap-5">
-          {/* Monogram tile — derived from the name we already store */}
           <div className="grid size-24 shrink-0 place-items-center rounded-full bg-paper-300 font-heading text-2xl text-ink-500">
             {initials || "?"}
           </div>
-
           <div className="space-y-2">
             <div className="flex flex-wrap items-center gap-2">
               <h1 className="font-heading text-[28px] text-ink-900">
@@ -42,14 +40,12 @@ export function ProfileCard({ memoir }: { memoir: Memoir }) {
             </p>
           </div>
         </div>
-
-        <div className="flex flex-row gap-2 sm:flex-col sm:items-end">
+        <div className="flex flex-row flex-wrap gap-2 sm:flex-col sm:items-end">
           {!isPublished && <PublishButton memoirId={memoir.id} />}
-
+          {isPublished && <ShareLinkButton memoirId={memoir.id} />}
           <Link href={`/dashboard/${memoir.id}/settings`}>
             <Button variant="outline">Edit profile</Button>
           </Link>
-
           {isPublished && (
             <Link href={`/read/${memoir.id}`}>
               <Button>See memoir</Button>

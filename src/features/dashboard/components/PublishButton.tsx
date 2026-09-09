@@ -1,5 +1,4 @@
 "use client";
-
 import { useRouter } from "next/navigation";
 import { BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -11,9 +10,9 @@ export function PublishButton({ memoirId }: { memoirId: string }) {
 
   const handlePublish = async () => {
     if (!window.confirm("Are you ready to publish this memoir? Once published, it becomes an immutable book and cannot be edited.")) return;
-
     try {
       await publish.mutateAsync(memoirId);
+      router.refresh();
       router.push(`/read/${memoirId}`);
     } catch (err) {
       alert("Failed to publish memoir. Please try again.");

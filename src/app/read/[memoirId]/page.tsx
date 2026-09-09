@@ -1,22 +1,35 @@
-import Link from "next/link";
-import { ChevronLeft } from "lucide-react";
-import { getMemoir } from "@/features/memoir/server";
-import { ScrollBook } from "@/features/memoir/components/ScrollBook";
+import { notFound } from "next/navigation";
+import { BookView } from "@/features/reader/components/BookView";
+import { getOwnerBook, getPublicBookByMemoir } from "@/features/reader/queries";
+import { isApiError } from "@/lib/api/errors";
 
-export default async function ReadMemoirPage({ params }: { params: Promise<{ memoirId: string }> }) {
+export default async function ReadMemoirPage({
+  params,
+}: {
+  params: Promise<{ memoirId: string }>;
+}) {
   const { memoirId } = await params;
-  const memoir = await getMemoir(memoirId);
 
-  return (
-    <main className="min-h-screen bg-[#1F1611]">
-      <div className="fixed left-6 top-6 z-50">
-        <Link href="/memoirs" className="flex items-center gap-2 rounded-full bg-black/20 p-2 text-amber-50/70 backdrop-blur-sm transition-colors hover:bg-black/40 hover:text-amber-50">
-          <ChevronLeft className="size-5" />
-          <span className="pr-2 text-sm font-medium">Back to Memoirs</span>
-        </Link>
-      </div>
-      
-      <ScrollBook memoir={memoir} />
-    </main>
-  );
+  try {
+    const book = await getOwnerBook(memoirId);
+    return <BookView book={book} mode="owner" memoirId={memoirId} />;
+  } catch (error) {
+    // Anonymous or non-owner readers get 401/403 from the owner endpoint;
+    // they are served the public book instead of a 404.
+    if (isApiError(error) && (error.status === 401 || error.status === 403)) {
+      try {
+        const book = await getPublicBookByMemoir(memoirId);
+        return <BookView book={book} mode="public" memoirId={memoirId} />;
+      } catch (publicError) {
+        if (isApiError(publicError) && publicError.status === 404) {
+          notFound();
+        }
+        throw publicError;
+      }
+    }
+    if (isApiError(error) && error.status === 404) {
+      notFound();
+    }
+    throw error;
+  }
 }

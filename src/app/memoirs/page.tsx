@@ -1,13 +1,21 @@
+// src/app/memoirs/page.tsx
 import Link from "next/link";
 import { BookOpen, Plus } from "lucide-react";
-
 import { Button } from "@/components/ui/button";
 import { getMemoirs } from "@/features/memoir/server";
 import { signOut } from "@/features/auth";
 import { formatDate } from "@/utils/date";
+import type { Memoir } from "@/features/memoir/schemas";
 
 export default async function MemoirsPage() {
-  const memoirs = await getMemoirs().catch(() => []);
+  let memoirs: Memoir[] = [];
+  let fetchError = false;
+
+  try {
+    memoirs = await getMemoirs();
+  } catch (e) {
+    fetchError = true;
+  }
 
   return (
     <main className="min-h-screen bg-paper-100">
@@ -30,7 +38,6 @@ export default async function MemoirsPage() {
               Open a memoir to continue preserving its story.
             </p>
           </div>
-
           <Link href="/onboarding?new=1">
             <Button>
               <Plus className="size-4" /> Create new memoir
@@ -38,7 +45,14 @@ export default async function MemoirsPage() {
           </Link>
         </div>
 
-        {memoirs.length === 0 ? (
+        {fetchError ? (
+          <div className="mt-16 flex flex-col items-center gap-5 rounded-xl border border-paper-400 bg-paper-000 p-16 text-center shadow-e1">
+            <p className="font-heading text-2xl text-destructive">
+              Could not load your memoirs
+            </p>
+            <p className="text-ink-500">Please check your connection and try again.</p>
+          </div>
+        ) : memoirs.length === 0 ? (
           <div className="mt-16 flex flex-col items-center gap-5 rounded-xl border border-paper-400 bg-paper-000 p-16 text-center shadow-e1">
             <BookOpen className="size-10 text-ink-300" strokeWidth={1.5} />
             <p className="font-heading text-2xl text-ink-900">
@@ -55,7 +69,6 @@ export default async function MemoirsPage() {
             {memoirs.map((memoir) => {
               const isPublished = memoir.status === "published";
               const targetUrl = isPublished ? `/read/${memoir.id}` : `/dashboard/${memoir.id}`;
-
               return (
                 <div
                   key={memoir.id}
@@ -66,10 +79,7 @@ export default async function MemoirsPage() {
                       <h3 className="font-heading text-lg text-ink-900">
                         {memoir.subject_name}
                       </h3>
-                      <div className="flex flex-col items-end gap-1.5">
-                        <span className="shrink-0 rounded-full border border-paper-400 px-2.5 py-0.5 text-xs font-medium text-ink-500">
-                          {memoir.subject_is_living ? "Ongoing" : "In loving memory"}
-                        </span>
+                      <div className="flex flex-col items-end">
                         <span
                           className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-medium ${
                             isPublished
@@ -81,18 +91,15 @@ export default async function MemoirsPage() {
                         </span>
                       </div>
                     </div>
-
                     <p className="mt-3 line-clamp-2 text-sm text-ink-500">
                       {memoir.description?.trim() ||
                         "Start adding memories to tell their story."}
                     </p>
                   </Link>
-
                   <div className="mt-5 flex items-center justify-between border-t border-paper-400 pt-4">
                     <p className="text-xs tabular-nums text-ink-400">
                       Created {formatDate(memoir.created_at)}
                     </p>
-
                     {isPublished && (
                       <Link href={targetUrl}>
                         <Button size="sm" variant="outline">

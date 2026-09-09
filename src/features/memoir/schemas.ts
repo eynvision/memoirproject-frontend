@@ -21,9 +21,10 @@ export const memoirSchema = z.object({
   subject_died_on: z.string().nullish(),
   subject_is_living: z.boolean(),
   description: z.string().nullish(),
-  status: z.string(),
+  status: z.enum(["draft", "published"]),
   created_at: z.string(),
 });
+
 export const memoirListSchema = z.array(memoirSchema);
 
 export type MemoirList = z.infer<typeof memoirListSchema>;
@@ -31,7 +32,6 @@ export type RelationshipGroup = z.infer<typeof relationshipGroupSchema>;
 export type MemoirCreateRequest = z.input<typeof memoirCreateRequestSchema>;
 export type Memoir = z.infer<typeof memoirSchema>;
 
-// Form specific type combining steps
 export type WizardFormValues = {
   relationship: RelationshipGroup | null;
   subject_name: string;

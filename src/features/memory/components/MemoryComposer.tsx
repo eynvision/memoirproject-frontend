@@ -1,8 +1,6 @@
 "use client";
-
 import { useState } from "react";
 import { Save, Trash2, Volume2, X } from "lucide-react";
-
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -28,7 +26,7 @@ type Props = {
   memoirId: string;
   onClose: () => void;
   memory?: Memory;
-  memoryId?: string; // Pre-created draft ID
+  memoryId?: string;
 };
 
 function audioExtension(mimeType: string): string {
@@ -45,22 +43,16 @@ export function MemoryComposer({
   memoryId: propMemoryId,
 }: Props) {
   const isEditMode = Boolean(memory);
-
-  // Use the prop memoryId if provided, otherwise fall back to memory?.id
   const [memoryId, setMemoryId] = useState<string | null>(
-    memory?.id ?? propMemoryId ?? null,
+    memory?.id ?? propMemoryId ?? null
   );
-
   const [title, setTitle] = useState(memory?.title ?? "");
   const [bodyText, setBodyText] = useState(memory?.body_text ?? "");
-
   const [existingMedia, setExistingMedia] = useState<MediaAsset[]>(
-    memory?.media ?? [],
+    memory?.media ?? []
   );
-
   const [audioClips, setAudioClips] = useState<RecordedClip[]>([]);
   const [photos, setPhotos] = useState<PickedImage[]>([]);
-
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [progressLabel, setProgressLabel] = useState<string | null>(null);
@@ -87,7 +79,7 @@ export function MemoryComposer({
       setUploadError(
         isApiError(error)
           ? error.message
-          : "Could not remove attachment. Please try again.",
+          : "Could not remove attachment. Please try again."
       );
     }
   }
@@ -114,7 +106,7 @@ export function MemoryComposer({
         photos.map(async (photo) => ({
           ...photo,
           file: await compressImage(photo.file),
-        })),
+        }))
       );
 
       const total = audioClips.length + preparedPhotos.length;
@@ -123,6 +115,7 @@ export function MemoryComposer({
         done += 1;
         setProgressLabel(`Uploading ${done} of ${total}…`);
       };
+
       if (total > 0) setProgressLabel(`Uploading 0 of ${total}…`);
 
       const audioUploads = audioClips.map((clip, i) =>
@@ -135,10 +128,10 @@ export function MemoryComposer({
             mimeType: clip.mimeType,
             durationMs: Math.max(1000, Math.round(clip.durationMs)),
             originalFilename: `voice_note_${Date.now()}_${i + 1}.${audioExtension(
-              clip.mimeType,
+              clip.mimeType
             )}`,
           })
-          .then(tick),
+          .then(tick)
       );
 
       const photoUploads = preparedPhotos.map((photo) =>
@@ -152,10 +145,11 @@ export function MemoryComposer({
             caption: photo.caption || undefined,
             originalFilename: photo.file.name,
           })
-          .then(tick),
+          .then(tick)
       );
 
-      await Promise.all([...audioUploads, ...photoUploads]);
+      const results = await Promise.allSettled([...audioUploads, ...photoUploads]);
+      const failedCount = results.filter(r => r.status === "rejected").length;
 
       if (!isEditMode) {
         setProgressLabel("Finishing…");
@@ -165,7 +159,13 @@ export function MemoryComposer({
       audioClips.forEach((clip) => URL.revokeObjectURL(clip.url));
       photos.forEach((photo) => URL.revokeObjectURL(photo.previewUrl));
 
-      onClose();
+      if (failedCount > 0) {
+        setUploadError(`${failedCount} file(s) failed to upload due to connection issues. The rest of your memory has been saved successfully.`);
+        setUploading(false);
+        setProgressLabel(null);
+      } else {
+        onClose();
+      }
     } catch (error) {
       const message = isApiError(error)
         ? error.code === "network"
@@ -173,7 +173,6 @@ export function MemoryComposer({
           : error.message
         : "Something went wrong. Your text is safe. Please try again.";
       setUploadError(message);
-    } finally {
       setUploading(false);
       setProgressLabel(null);
     }
@@ -198,13 +197,9 @@ export function MemoryComposer({
             <X className="size-5" />
           </button>
         </header>
-
         <div className="flex-1 space-y-7 overflow-y-auto px-6 py-6">
           <div className="space-y-2">
-            <Label
-              htmlFor="memory-title"
-              className="text-sm font-medium text-ink-700"
-            >
+            <Label htmlFor="memory-title" className="text-sm font-medium text-ink-700">
               Title
             </Label>
             <Input
@@ -215,12 +210,8 @@ export function MemoryComposer({
               className="bg-paper-000"
             />
           </div>
-
           <div className="space-y-2">
-            <Label
-              htmlFor="memory-body"
-              className="text-sm font-medium text-ink-700"
-            >
+            <Label htmlFor="memory-body" className="text-sm font-medium text-ink-700">
               Description
             </Label>
             <textarea
@@ -231,8 +222,7 @@ export function MemoryComposer({
               className="min-h-[140px] w-full rounded-lg border border-paper-400 bg-paper-000 px-3 py-2.5 text-sm text-ink-900 placeholder:text-ink-300 focus:border-ember-500 focus:outline-none focus:ring-3 focus:ring-ember-500/20"
             />
           </div>
-
-          {/* Existing audio attachments (edit mode) */}
+          
           {existingAudios.length > 0 && (
             <div className="space-y-2">
               <Label className="text-sm font-medium text-ink-700">
@@ -253,12 +243,7 @@ export function MemoryComposer({
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <audio
-                        controls
-                        preload="none"
-                        src={asset.playback_url}
-                        className="h-8 w-48"
-                      />
+                      <audio controls preload="none" src={asset.playback_url} className="h-8 w-48" />
                       <button
                         type="button"
                         onClick={() => handleRemoveExistingMedia(asset.id)}
@@ -275,12 +260,8 @@ export function MemoryComposer({
           )}
 
           <div className="space-y-2">
-            <Label className="text-sm font-medium text-ink-700">
-              Add voice note
-            </Label>
-            <VoiceRecorder
-              onSave={(clip) => setAudioClips((prev) => [...prev, clip])}
-            />
+            <Label className="text-sm font-medium text-ink-700">Add voice note</Label>
+            <VoiceRecorder onSave={(clip) => setAudioClips((prev) => [...prev, clip])} />
             {audioClips.length > 0 && (
               <ul className="space-y-2 pt-2">
                 {audioClips.map((clip, index) => (
@@ -291,8 +272,7 @@ export function MemoryComposer({
                     <div className="flex items-center gap-2">
                       <Volume2 className="size-4 text-moss-500" />
                       <span className="font-medium">
-                        New voice note {index + 1} (
-                        {Math.round(clip.durationMs / 1000)}s)
+                        New voice note {index + 1} ({Math.round(clip.durationMs / 1000)}s)
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
@@ -301,9 +281,7 @@ export function MemoryComposer({
                         type="button"
                         onClick={() => {
                           URL.revokeObjectURL(clip.url);
-                          setAudioClips((prev) =>
-                            prev.filter((_, i) => i !== index),
-                          );
+                          setAudioClips((prev) => prev.filter((_, i) => i !== index));
                         }}
                         aria-label={`Remove new voice note ${index + 1}`}
                         className="grid size-8 place-items-center rounded-full text-ink-300 transition-colors hover:bg-clay-100 hover:text-clay-500"
@@ -317,7 +295,6 @@ export function MemoryComposer({
             )}
           </div>
 
-          {/* Existing photos (edit mode) */}
           {existingPhotos.length > 0 && (
             <div className="space-y-2">
               <Label className="text-sm font-medium text-ink-700">
@@ -336,9 +313,7 @@ export function MemoryComposer({
                       />
                     </div>
                     {asset.caption && (
-                      <p className="line-clamp-2 text-xs text-ink-400">
-                        {asset.caption}
-                      </p>
+                      <p className="line-clamp-2 text-xs text-ink-400">{asset.caption}</p>
                     )}
                     <Button
                       type="button"
@@ -356,22 +331,16 @@ export function MemoryComposer({
           )}
 
           <div className="space-y-2">
-            <Label className="text-sm font-medium text-ink-700">
-              Add photograph
-            </Label>
+            <Label className="text-sm font-medium text-ink-700">Add photograph</Label>
             <ImagePicker images={photos} onChange={setPhotos} />
           </div>
 
           {uploadError && (
-            <div
-              className="rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive"
-              role="alert"
-            >
+            <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive" role="alert">
               {uploadError}
             </div>
           )}
         </div>
-
         <footer className="flex items-center justify-end border-t border-paper-400 bg-paper-000 px-6 py-4">
           <Button
             type="button"
@@ -380,8 +349,7 @@ export function MemoryComposer({
             size="lg"
           >
             {uploading ? (
-              progressLabel ??
-              (isEditMode ? "Saving changes…" : "Saving memory…")
+              progressLabel ?? (isEditMode ? "Saving changes…" : "Saving memory…")
             ) : (
               <>
                 <Save className="size-4" />

@@ -1,8 +1,6 @@
 import "server-only";
-
 import { unstable_rethrow } from "next/navigation";
 import type { ZodType, z } from "zod";
-
 import { env } from "@/lib/config/env";
 import { ApiError, readErrorDetail } from "@/lib/api/errors";
 import { createClient } from "@/lib/supabase/server";
@@ -19,7 +17,7 @@ export type ApiRequestOptions<TSchema extends ZodType> = ApiRequestCaching & {
   body?: unknown;
   headers?: Record<string, string>;
   signal?: AbortSignal;
-  retries?: number; // Number of retry attempts
+  retries?: number;
 };
 
 async function sleep(ms: number): Promise<void> {
@@ -35,18 +33,11 @@ export async function apiRequestServer<TSchema extends ZodType>({
   signal,
   cache,
   next,
-  retries = 2, // Default 2 retries
+  retries = 2,
 }: ApiRequestOptions<TSchema>): Promise<z.infer<TSchema>> {
-  const url = `${process.env.NEXT_PUBLIC_API_BASE_URL}${path}`;
-
-  // Longer timeout for server-side requests (30 seconds)
+  const url = `${env.NEXT_PUBLIC_API_BASE_URL}${path}`;
   const timeoutMs = 30000;
-  const timeout = AbortSignal.timeout(timeoutMs);
-  const combinedSignal = signal
-    ? AbortSignal.any([timeout, signal])
-    : timeout;
 
-  // Get auth token from server-side Supabase client
   const supabase = await createClient();
   const { data: { session } } = await supabase.auth.getSession();
   const authHeader: Record<string, string> = session?.access_token
@@ -54,11 +45,13 @@ export async function apiRequestServer<TSchema extends ZodType>({
     : {};
 
   let lastError: Error | null = null;
-  
+
   for (let attempt = 0; attempt <= retries; attempt++) {
+    const timeout = AbortSignal.timeout(timeoutMs);
+    const combinedSignal = signal ? AbortSignal.any([timeout, signal]) : timeout;
+
     try {
       if (attempt > 0) {
-        // Exponential backoff: 1s, 2s, 4s...
         const backoffMs = Math.min(1000 * Math.pow(2, attempt - 1), 5000);
         await sleep(backoffMs);
       }
@@ -93,36 +86,28 @@ export async function apiRequestServer<TSchema extends ZodType>({
         const fields = result.error.issues
           .map((issue) => `${issue.path.join(".") || "(root)"} (${issue.message})`)
           .join(", ");
-
         throw ApiError.contract(url, fields, result.error);
       }
 
       return result.data;
-
     } catch (cause) {
       unstable_rethrow(cause);
-      
       lastError = cause as Error;
-      
-      // Don't retry on client errors (4xx) or contract mismatches
+
       if (cause instanceof ApiError) {
         if (cause.isClientError || cause.code === "contract") {
           throw cause;
         }
       }
-      
-      // If this was the last attempt, throw
+
       if (attempt === retries) {
         if (lastError.name === "TimeoutError") {
           throw ApiError.network(url, lastError);
         }
         throw lastError;
       }
-      
-      // Otherwise, loop continues for retry
     }
   }
 
-  // Fallback (should never reach here)
   throw lastError || ApiError.network(url, new Error("Unknown error"));
 }

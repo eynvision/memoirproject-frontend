@@ -8,7 +8,10 @@
   /* ---------- Typography ---------- */
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, "SFMono-Regular", monospace;
-  --font-heading: var(--font-fraunces), Georgia, "Times New Roman", serif;
+  /* Headlines + buttons: Alfred Sans stand-in (Albert Sans) */
+  --font-heading: var(--font-albert-sans), ui-sans-serif, system-ui, sans-serif;
+  /* Paragraph copy: Alfred Serif stand-in (Lora) */
+  --font-serif: var(--font-lora), Georgia, "Times New Roman", serif;
 
   /* ---------- Paper (surfaces) ---------- */
   --color-paper-000: #FFFDF9;
@@ -107,7 +110,6 @@
   --input: #E2D3BC;
   --ring: #B45230;
   --radius: 0.625rem;
-
   --chart-1: #B45230;
   --chart-2: #B08B4F;
   --chart-3: #5C7A50;
@@ -168,19 +170,28 @@
   body {
     @apply bg-background text-foreground font-sans antialiased;
   }
-
-  /* Serif headings: Fraunces at 500, never heavier, balanced lines */
+  /* Headlines speak Albert Sans (Alfred Sans stand-in) */
   h1,
   h2,
   h3,
   h4,
+  h5,
+  h6,
   .font-heading {
-    font-optical-sizing: auto;
+    font-family: var(--font-heading);
     font-weight: 500;
     letter-spacing: -0.01em;
     text-wrap: balance;
   }
-
+  /* All paragraph copy reads in Lora (Alfred Serif stand-in) */
+  p {
+    font-family: var(--font-serif);
+  }
+  /* Every button (primitive + native) uses the heading sans */
+  button,
+  [data-slot="button"] {
+    font-family: var(--font-heading);
+  }
   ::placeholder {
     color: var(--color-ink-300);
   }
@@ -223,5 +234,19 @@ body::after {
   z-index: 1;
   pointer-events: none;
   opacity: 0.035;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%E%3C/svg%3E");
+}
+/* src/app/globals.css - Add at the end */
+
+@media print {
+  body {
+    background: white !important;
+    color: black !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+  @page {
+    margin: 2cm;
+  }
 }

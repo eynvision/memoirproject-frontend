@@ -1,18 +1,12 @@
 "use client";
 
-/**
- * Browser-side draft storage using IndexedDB.
- * Protects against tab crashes. NOT against device switches —
- * that is what the server-side draft memory row is for.
- */
-
 const DB_NAME = "memoir-drafts";
 const DB_VERSION = 1;
 const STORE = "drafts";
 
 export type DraftEnvelope = {
   memoirId: string;
-  memoryId: string;   // the server-side draft row id
+  memoryId: string;
   title: string;
   body: string;
   audioBlobs: { blob: Blob; durationMs: number; mimeType: string }[];

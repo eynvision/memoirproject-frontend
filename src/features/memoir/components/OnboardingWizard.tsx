@@ -2,7 +2,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
-
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -35,40 +34,35 @@ export function OnboardingWizard() {
   const forceNew = searchParams.get("new") === "1";
   const create = useCreateMemoir();
   const supabase = useMemo(() => createClient(), []);
-
+  
   const [step, setStep] = useState<1 | 2>(1);
-  const [relationship, setRelationship] =
-    useState<RelationshipGroup | null>(null);
+  const [relationship, setRelationship] = useState<RelationshipGroup | null>(null);
   const [authenticated, setAuthenticated] = useState(false);
   const [hydrated, setHydrated] = useState(false);
-  const [pendingCreate, setPendingCreate] =
-    useState<PendingOnboarding | null>(null);
+  const [pendingCreate, setPendingCreate] = useState<PendingOnboarding | null>(null);
   const [createError, setCreateError] = useState<string | null>(null);
-
+  
   const inFlightRef = useRef(false);
   const autoCreateAttemptedRef = useRef(false);
 
-  const { register, handleSubmit, watch, setValue } =
-    useForm<WizardFormValues>({
-      mode: "onChange",
-      defaultValues: {
-        relationship: null,
-        subject_name: "",
-        birth_year: "",
-        is_living: true,
-        end_year: "",
-      },
-    });
+  const { register, handleSubmit, watch, setValue } = useForm<WizardFormValues>({
+    mode: "onChange",
+    defaultValues: {
+      relationship: null,
+      subject_name: "",
+      birth_year: "",
+      is_living: true,
+      end_year: "",
+    },
+  });
 
   const isLiving = watch("is_living");
   const subjectName = watch("subject_name");
 
   useEffect(() => {
     let cancelled = false;
-
     async function initialize() {
       const pending = loadPendingOnboarding();
-
       if (pending) {
         setRelationship(pending.relationship);
         setStep(2);
@@ -80,11 +74,8 @@ export function OnboardingWizard() {
       }
 
       let userExists = false;
-
       try {
-        const {
-          data: { user },
-        } = await supabase.auth.getUser();
+        const { data: { user } } = await supabase.auth.getUser();
         userExists = Boolean(user);
       } catch {
         userExists = false;
@@ -92,8 +83,6 @@ export function OnboardingWizard() {
 
       if (cancelled) return;
 
-      // Already signed in, nothing pending, and not explicitly creating a new
-      // memoir -> send them to their memoir list instead of the wizard.
       if (userExists && !pending && !forceNew) {
         router.replace("/memoirs");
         return;
@@ -105,9 +94,7 @@ export function OnboardingWizard() {
       }
       setHydrated(true);
     }
-
     void initialize();
-
     return () => {
       cancelled = true;
     };
@@ -116,57 +103,52 @@ export function OnboardingWizard() {
   const createWorkspace = useCallback(
     async (data: PendingOnboarding) => {
       if (inFlightRef.current) return;
-
       inFlightRef.current = true;
       setCreateError(null);
-
       try {
         const memoir = await create.mutateAsync({
           relationship: data.relationship,
           subject_name: data.subject_name,
           is_living: data.is_living,
-          birth_year: data.birth_year
-            ? Number.parseInt(data.birth_year, 10)
-            : null,
-          end_year:
-            !data.is_living && data.end_year
-              ? Number.parseInt(data.end_year, 10)
-              : null,
+          birth_year: data.birth_year ? Number.parseInt(data.birth_year, 10) : null,
+          end_year: !data.is_living && data.end_year ? Number.parseInt(data.end_year, 10) : null,
         });
-
         clearPendingOnboarding();
         setPendingCreate(null);
         router.push(`/dashboard/${memoir.id}`);
       } catch (error) {
-        setCreateError(
-          isApiError(error)
-            ? error.message
-            : "Unable to create the memoir. Please try again.",
-        );
+        const errorMsg = isApiError(error) 
+          ? error.message 
+          : "Unable to create the memoir. Please try again.";
+        
+        // If the backend reports the user account is missing, the auth session is out of sync.
+        // Sign out and redirect to signup to force a clean re-sync of the user_account row.
+        if (errorMsg.includes("User account is not initialized")) {
+          await supabase.auth.signOut();
+          savePendingOnboarding(data);
+          router.push("/signup");
+          return;
+        }
+        
+        setCreateError(errorMsg);
       } finally {
         inFlightRef.current = false;
       }
     },
-    [create, router],
+    [create, router, supabase]
   );
 
   useEffect(() => {
-    if (
-      !hydrated ||
-      !authenticated ||
-      !pendingCreate ||
-      autoCreateAttemptedRef.current
-    ) {
+    if (!hydrated || !authenticated || !pendingCreate || autoCreateAttemptedRef.current) {
       return;
     }
-
     autoCreateAttemptedRef.current = true;
     void createWorkspace(pendingCreate);
   }, [authenticated, createWorkspace, hydrated, pendingCreate]);
 
   async function onSubmit(data: WizardFormValues) {
     if (!relationship) return;
-
+    
     const pending: PendingOnboarding = {
       relationship,
       subject_name: data.subject_name.trim(),
@@ -176,11 +158,8 @@ export function OnboardingWizard() {
     };
 
     let userExists = false;
-
     try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      const { data: { user } } = await supabase.auth.getUser();
       userExists = Boolean(user);
     } catch {
       userExists = false;
@@ -188,7 +167,7 @@ export function OnboardingWizard() {
 
     if (!userExists) {
       savePendingOnboarding(pending);
-      router.push("/login");
+      router.push("/signup");
       return;
     }
 
@@ -198,7 +177,6 @@ export function OnboardingWizard() {
 
   return (
     <div className="mx-auto max-w-2xl px-6 pt-[8vh] pb-24">
-      {/* Stepper */}
       <div className="mb-10 flex items-center justify-center gap-3">
         <StepDot n={1} active={step === 1} />
         <span
@@ -216,11 +194,9 @@ export function OnboardingWizard() {
               Who is this memoir for?
             </h1>
             <p className="text-[17px] text-ink-500">
-              Choose your relationship to the person whose memories
-              you&apos;re preserving.
+              Choose your relationship to the person whose memories you&apos;re preserving.
             </p>
           </div>
-
           <div className="mx-auto grid max-w-[600px] grid-cols-2 gap-4 md:grid-cols-3">
             {RELATIONS.map((rel) => (
               <button
@@ -240,7 +216,6 @@ export function OnboardingWizard() {
               </button>
             ))}
           </div>
-
           <Button
             size="lg"
             className="h-12 px-10"
@@ -262,13 +237,9 @@ export function OnboardingWizard() {
               Tell us about them
             </h1>
           </div>
-
           <div className="mx-auto w-full max-w-[480px] space-y-6">
             <div className="space-y-2">
-              <Label
-                htmlFor="subject_name"
-                className="text-sm font-medium text-ink-700"
-              >
+              <Label htmlFor="subject_name" className="text-sm font-medium text-ink-700">
                 Their name
               </Label>
               <Input
@@ -278,12 +249,8 @@ export function OnboardingWizard() {
                 className="h-12 bg-paper-000 text-lg"
               />
             </div>
-
             <div className="space-y-2">
-              <Label
-                htmlFor="birth_year"
-                className="text-sm font-medium text-ink-700"
-              >
+              <Label htmlFor="birth_year" className="text-sm font-medium text-ink-700">
                 Year of birth
               </Label>
               <Input
@@ -296,7 +263,6 @@ export function OnboardingWizard() {
                 className="h-12 bg-paper-000"
               />
             </div>
-
             <div className="space-y-2">
               <Label className="text-sm font-medium text-ink-700">
                 Their story continues until
@@ -312,7 +278,6 @@ export function OnboardingWizard() {
                   />
                   <span className="font-medium text-ink-700">Present day</span>
                 </label>
-
                 <label className="flex cursor-pointer flex-col gap-3">
                   <div className="flex items-center gap-3">
                     <input
@@ -322,11 +287,8 @@ export function OnboardingWizard() {
                       checked={!isLiving}
                       onChange={() => setValue("is_living", false)}
                     />
-                    <span className="font-medium text-ink-700">
-                      A specific year
-                    </span>
+                    <span className="font-medium text-ink-700">A specific year</span>
                   </div>
-
                   {!isLiving && (
                     <Input
                       {...register("end_year")}
@@ -351,7 +313,7 @@ export function OnboardingWizard() {
             )}
 
             {authenticated && pendingCreate && !createError && (
-              <p className="text-center text-sm text-ink-500">
+              <p className="text-center text-sm text-ink-500 animate-pulse">
                 Your account is ready. Creating your memoir workspace…
               </p>
             )}
@@ -371,11 +333,7 @@ export function OnboardingWizard() {
               type="submit"
               size="lg"
               className="h-12 px-8"
-              disabled={
-                !subjectName.trim() ||
-                create.isPending ||
-                !hydrated
-              }
+              disabled={!subjectName.trim() || create.isPending || !hydrated}
             >
               {create.isPending ? "Creating…" : "Create workspace"}
             </Button>
