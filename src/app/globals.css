@@ -1,51 +1,116 @@
-/* The stylesheet used containing tailwind and css rules applied accross application */
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-
-  /* Shared Theme Tokens for your custom color palette */
-  --memory-bg: #faf8f5;
-  --memory-primary: #381c24;
-  --memory-accent: #c9a063;
-  --memory-border: #f0e4d3;
-  --memory-muted: #78716c;
-  --memory-maroon: #4a222a;
-  --memory-card: #fdf8ed;
-  --memory-light: #fefaf1;
-  --memory-dark-end: #12070b;
-
-  /* Semantic form token */
-  --memory-required: #dc2626;
+  --cream: #faf6f0;
+  --terracotta: #c2683d;
+  --terracotta-dark: #a8562f;
+  --charcoal: #3a342e;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
 
-  --font-sans: var(--font-inter), 'Inter', sans-serif;
-  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  --color-cream: var(--cream);
+  --color-terracotta: var(--terracotta);
+  --color-terracotta-dark: var(--terracotta-dark);
+  --color-charcoal: var(--charcoal);
 
-  /* Registering the shared color tokens for Tailwind utility classes */
-  --color-memory-bg: var(--memory-bg);
-  --color-memory-primary: var(--memory-primary);
-  --color-memory-accent: var(--memory-accent);
-  --color-memory-border: var(--memory-border);
-  --color-memory-muted: var(--memory-muted);
-  --color-memory-maroon: var(--memory-maroon);
-  --color-memory-card: var(--memory-card);
-  --color-memory-light: var(--memory-light);
-  --color-memory-dark-end: var(--memory-dark-end);
+  --color-ink: #1B1613;
+  --color-ink-800: #221B16;
+  --color-ink-700: #2B2219;
+  --color-ink-600: #382C21;
 
-  /* Semantic form token */
-  --color-memory-required: var(--memory-required);
+  --color-linen: #F6F0E6;
+  --color-linen-dim: #EDE3D2;
 
-  --font-caveat: var(--font-caveat), cursive;
+  --color-ember: #C2703F;
+  --color-ember-hover: #A85E32;
+  --color-ember-soft: #F0DCC8;
+  --color-ember-deep: #8B4513;
+
+  --color-cocoa: #2B2118;
+  --color-mist: #B9AFA2;
+  --color-mist-dim: #7C7268;
+
+  /* Heritage & Heart — book reader design system (see DESIGN.md) */
+  --font-serif: 'EB Garamond', Georgia, 'Times New Roman', serif;
+  --font-book-sans: 'Source Sans 3', var(--font-geist-sans), Arial, Helvetica, sans-serif;
+
+  --color-book-surface: #fcf9f8;
+  --color-book-surface-dim: #dcd9d9;
+  --color-book-surface-bright: #fcf9f8;
+  --color-book-surface-container-lowest: #ffffff;
+  --color-book-surface-container-low: #f6f3f2;
+  --color-book-surface-container: #f0eded;
+  --color-book-surface-container-high: #eae7e7;
+  --color-book-surface-container-highest: #e4e2e1;
+  --color-book-on-surface: #1b1c1c;
+  --color-book-on-surface-variant: #54433d;
+  --color-book-inverse-surface: #303030;
+  --color-book-inverse-on-surface: #f3f0f0;
+  --color-book-outline: #87736b;
+  --color-book-outline-variant: #d9c2b9;
+  --color-book-primary: #8f4928;
+  --color-book-on-primary: #ffffff;
+  --color-book-primary-container: #ad603e;
+  --color-book-on-primary-container: #fffbff;
+  --color-book-secondary: #6a5c4e;
+  --color-book-on-secondary: #ffffff;
+  --color-book-secondary-container: #f3dfce;
+  --color-book-on-secondary-container: #706254;
+  --color-book-tertiary: #8e4927;
+  --color-book-on-tertiary: #ffffff;
+  --color-book-tertiary-container: #ac613d;
+  --color-book-on-tertiary-container: #fffbff;
+
+  /* The Heirloom Chronicle — memoir access & sharing design system (see DESIGN.md) */
+  --font-heirloom-serif: 'EB Garamond', Georgia, 'Times New Roman', serif;
+  --font-heirloom-sans: 'Manrope', var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  --font-heirloom-mono: 'JetBrains Mono', var(--font-geist-mono), 'Courier New', monospace;
+
+  --color-heirloom-bg-page: #F5F0EB;
+  --color-heirloom-bg-card: #FFFFFF;
+  --color-heirloom-bg-card-alt: #FAF7F4;
+  --color-heirloom-surface-container-low: #f6f3f2;
+  --color-heirloom-surface-container: #f0eded;
+  --color-heirloom-surface-container-high: #eae7e7;
+  --color-heirloom-surface-container-highest: #e5e2e1;
+
+  --color-heirloom-primary: #B8622F;
+  --color-heirloom-primary-hover: #9E5225;
+  --color-heirloom-primary-light: rgba(184, 98, 47, 0.08);
+  --color-heirloom-primary-container: #a85324;
+  --color-heirloom-on-primary: #ffffff;
+  --color-heirloom-on-primary-container: #ffe8df;
+
+  --color-heirloom-secondary: #5f5e5c;
+  --color-heirloom-secondary-container: #e2dfdc;
+  --color-heirloom-tertiary-fixed: #e7e1db;
+  --color-heirloom-gold-accent: #D4A373;
+
+  --color-heirloom-text-primary: #1F1F1F;
+  --color-heirloom-text-secondary: #6B6B6B;
+  --color-heirloom-text-tertiary: #9A9A9A;
+
+  --color-heirloom-border: #E8E2DC;
+  --color-heirloom-border-focus: #B8622F;
+  --color-heirloom-outline-variant: #dbc1b6;
+
+  --color-heirloom-danger: #C0392B;
+  --color-heirloom-danger-hover: #A93226;
+  --color-heirloom-danger-light: rgba(192, 57, 43, 0.08);
+
+  --color-heirloom-success: #2E7D32;
+  --color-heirloom-success-light: rgba(46, 125, 50, 0.08);
+
+  --color-heirloom-overlay: rgba(31, 31, 31, 0.40);
+  --color-heirloom-inverse-surface: #303030;
+  --color-heirloom-inverse-on-surface: #f3f0ef;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: 'Inter', sans-serif;
+  background: var(--cream);
+  color: var(--charcoal);
+  font-family: Arial, Helvetica, sans-serif;
 }
