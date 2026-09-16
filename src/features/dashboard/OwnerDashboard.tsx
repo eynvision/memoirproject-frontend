@@ -65,6 +65,11 @@ export default function OwnerDashboardPage() {
     router.push("/");
   };
 
+  // Navigate to the memoir preview/edit/publish flow
+  const handlePreviewMemoir = () => {
+    router.push("/memoir-preview");
+  };
+
   return (
     <BookCoverExperience
       title="Personal Life Memoir"
@@ -85,6 +90,7 @@ export default function OwnerDashboardPage() {
             dob="1942"
             dod="2024"
             onLogout={handleLogout}
+            onPreviewMemoir={handlePreviewMemoir}
           />
 
           <div className="mx-auto w-full max-w-6xl px-5 py-7 sm:px-8 sm:py-9 lg:px-10">

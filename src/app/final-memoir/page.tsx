@@ -3,7 +3,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { useExportMemoir } from "@/hooks/useExportMemoir";
-import { api, CommentEntity } from "@/lib/api/client";
+import { api, CommentEntity, ChapterEntity } from "@/lib/api/client";
 
 // Custom Components
 import MemoirHeader from "@/features/FinalMemoir/MemoirHeader";
@@ -12,9 +12,30 @@ import MemoirActionBar from "@/features/FinalMemoir/MemoirActionBar";
 import MemoryCard from "@/features/FinalMemoir/MemoryCard";
 import MemoirSidebar from "@/features/FinalMemoir/MemoirSidebar";
 import ScatteredGallery from "@/features/FinalMemoir/ScatteredGallery";
+import { MemoryItem } from "@/features/FinalMemoir/types";
 
 // Mock Data
 import { mockHeroPhotos, mockMemories, mockShortQuotes } from "@/features/FinalMemoir/mockData";
+
+// Maps real published chapters (nested memories) into the flat MemoryItem
+// shape the existing timeline/chapter rendering already expects.
+function chaptersToMemoryItems(chapters: ChapterEntity[]): MemoryItem[] {
+  return chapters
+    .slice()
+    .sort((a, b) => a.sort_order - b.sort_order)
+    .flatMap((chapter) =>
+      chapter.memories.map((memory) => ({
+        id: memory.id,
+        author: "Family",
+        title: memory.title ?? undefined,
+        text: memory.body_text ?? "",
+        reactionsCount: 0,
+        chapter: chapter.title,
+        chapterSubtitle: chapter.subtitle ?? undefined,
+        date: memory.occurred_start ?? "",
+      }))
+    );
+}
 
 interface ReplyItem {
   id: string;
@@ -50,6 +71,8 @@ export default function FinalMemoirPage() {
   // Strict typing for comments map without any 'any' types
   const [commentsMap, setCommentsMap] = useState<Record<string, CommentItem[]>>({});
   
+  const [memories, setMemories] = useState<MemoryItem[]>(mockMemories);
+
   const [reactions, setReactions] = useState<Record<string, { count: number; reacted: boolean }>>(() => {
     const initial: Record<string, { count: number; reacted: boolean }> = {};
     mockMemories.forEach(m => {
@@ -93,6 +116,28 @@ export default function FinalMemoirPage() {
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
     return uuidRegex.test(id);
   };
+
+  // Load the real published chapters/memories once we have a real memoir id.
+  // Falls back to the mock data (already the initial state) when there is
+  // none yet, or when the memoir hasn't been published through the new
+  // preview/publish flow.
+  useEffect(() => {
+    if (!isValidUuid(memoirId)) return;
+
+    api.getChapters(memoirId, "published")
+      .then((chapters) => {
+        if (chapters.length === 0) return;
+        const realMemories = chaptersToMemoryItems(chapters);
+        setMemories(realMemories);
+        setReactions(
+          realMemories.reduce<Record<string, { count: number; reacted: boolean }>>((acc, m) => {
+            acc[m.id] = { count: m.reactionsCount, reacted: false };
+            return acc;
+          }, {})
+        );
+      })
+      .catch((err) => console.error("Failed to load published chapters:", err));
+  }, [memoirId]);
 
   // Helper to format flat backend comment entities into nested reply trees
   const formatCommentsToTree = (entities: CommentEntity[]): CommentItem[] => {
@@ -266,7 +311,7 @@ export default function FinalMemoirPage() {
     typingTimeoutRef.current = setTimeout(() => setIsTyping(false), 250);
   };
 
-  const filteredMemories = mockMemories.filter((mem) => {
+  const filteredMemories = memories.filter((mem) => {
     const matchesSearch =
       searchQuery === "" ||
       mem.text.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -276,7 +321,7 @@ export default function FinalMemoirPage() {
     return matchesSearch;
   });
 
-  const uniqueChapters = Array.from(new Set(mockMemories.map(m => m.chapter)));
+  const uniqueChapters = Array.from(new Set(memories.map(m => m.chapter)));
 
   return (
     <div className="min-h-screen bg-[#FAF9F6] font-serif text-stone-900 selection:bg-memory-maroon/20">
@@ -405,10 +450,11 @@ export default function FinalMemoirPage() {
           </div>
         </main>
 
-        <MemoirSidebar 
+        <MemoirSidebar
           activeView={activeView}
           setActiveView={setActiveView}
           mockShortQuotes={mockShortQuotes}
+          chapters={uniqueChapters}
         />
       </div>
 

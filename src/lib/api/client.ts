@@ -122,6 +122,48 @@ export interface CommentCreatePayload {
   body: string;
 }
 
+export interface ChapterMemoryEntity {
+  id: string;
+  memoir_id: string;
+  title: string | null;
+  body_text: string | null;
+  occurred_start: string | null;
+  occurred_precision: string | null;
+}
+
+export interface ChapterEntity {
+  id: string;
+  memoir_id: string;
+  title: string;
+  subtitle: string | null;
+  summary: string | null;
+  status: "draft" | "published";
+  sort_order: number;
+  confidence: number | null;
+  memories: ChapterMemoryEntity[];
+}
+
+export interface GenerationStatusEntity {
+  memoir_id: string;
+  generation_id?: string;
+  status: "idle" | "running" | "completed" | "failed";
+  memory_count?: number;
+  error_message?: string;
+  started_at?: string;
+  finished_at?: string;
+}
+
+export interface ChapterUpdatePayload {
+  title?: string;
+  subtitle?: string;
+  summary?: string;
+}
+
+export interface MemoryUpdatePayload {
+  title?: string;
+  body_text?: string;
+}
+
 export const api = {
   async signup(payload: SignupPayload) {
     const res = await apiFetch("/api/auth/signup/", {
@@ -295,6 +337,89 @@ export const api = {
   if (!res.ok) throw new Error("Failed to search archive");
   const json = await res.json();
   return json.data || json;
+  },
+
+  // AI Memoir Organisation (chapters)
+  async generateChapters(memoirId: string) {
+    const res = await apiFetch(`/api/memoirs/${memoirId}/generate`, {
+      method: "POST",
+    });
+    if (!res.ok) {
+      const errData: ApiErrorResponse = await res.json().catch(() => ({}));
+      throw new Error(parseErrorDetail(errData, "Failed to start chapter generation"));
+    }
+    const json = await res.json();
+    return json.data || json;
+  },
+
+  async getGenerationStatus(memoirId: string): Promise<GenerationStatusEntity> {
+    const res = await apiFetch(`/api/memoirs/${memoirId}/generation-status`, {
+      method: "GET",
+    });
+    if (!res.ok) throw new Error("Failed to fetch generation status");
+    const json = await res.json();
+    return json.data || json;
+  },
+
+  async getChapters(memoirId: string, status?: "draft" | "published"): Promise<ChapterEntity[]> {
+    const qs = status ? `?status=${status}` : "";
+    const res = await apiFetch(`/api/memoirs/${memoirId}/chapters${qs}`, {
+      method: "GET",
+    });
+    if (!res.ok) throw new Error("Failed to fetch chapters");
+    const json = await res.json();
+    return json.data || json;
+  },
+
+  async updateChapter(memoirId: string, chapterId: string, payload: ChapterUpdatePayload): Promise<ChapterEntity> {
+    const res = await apiFetch(`/api/memoirs/${memoirId}/chapters/${chapterId}`, {
+      method: "PATCH",
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) {
+      const errData: ApiErrorResponse = await res.json().catch(() => ({}));
+      throw new Error(parseErrorDetail(errData, "Failed to update chapter"));
+    }
+    const json = await res.json();
+    return json.data || json;
+  },
+
+  async reorderChapterMemories(memoirId: string, chapterId: string, memoryIds: string[]): Promise<ChapterEntity> {
+    const res = await apiFetch(`/api/memoirs/${memoirId}/chapters/${chapterId}/memory-order`, {
+      method: "PATCH",
+      body: JSON.stringify({ memory_ids: memoryIds }),
+    });
+    if (!res.ok) {
+      const errData: ApiErrorResponse = await res.json().catch(() => ({}));
+      throw new Error(parseErrorDetail(errData, "Failed to reorder memories"));
+    }
+    const json = await res.json();
+    return json.data || json;
+  },
+
+  async updateMemory(memoirId: string, memoryId: string, payload: MemoryUpdatePayload) {
+    const res = await apiFetch(`/api/memoirs/${memoirId}/memories/${memoryId}`, {
+      method: "PATCH",
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) {
+      const errData: ApiErrorResponse = await res.json().catch(() => ({}));
+      throw new Error(parseErrorDetail(errData, "Failed to update memory"));
+    }
+    const json = await res.json();
+    return json.data || json;
+  },
+
+  async publishMemoir(memoirId: string) {
+    const res = await apiFetch(`/api/memoirs/${memoirId}/publish`, {
+      method: "POST",
+    });
+    if (!res.ok) {
+      const errData: ApiErrorResponse = await res.json().catch(() => ({}));
+      throw new Error(parseErrorDetail(errData, "Failed to publish memoir"));
+    }
+    const json = await res.json();
+    return json.data || json;
   },
 };
 

@@ -1,13 +1,26 @@
 import React from "react";
 import { ShortQuote } from "./types";
 
+const DEFAULT_CHAPTER_TITLES = [
+  "The girl with the open window",
+  "The things she carried",
+  "A room at the center",
+  "What stays warm",
+];
+
 interface MemoirSidebarProps {
   activeView: "timeline" | "chapters";
   setActiveView: (val: "timeline" | "chapters") => void;
   mockShortQuotes: ShortQuote[];
+  chapters?: string[];
 }
 
-export default function MemoirSidebar({ activeView, setActiveView, mockShortQuotes }: MemoirSidebarProps) {
+export default function MemoirSidebar({
+  activeView,
+  setActiveView,
+  mockShortQuotes,
+  chapters = DEFAULT_CHAPTER_TITLES,
+}: MemoirSidebarProps) {
   return (
     <aside className="w-full lg:w-56 shrink-0 space-y-8">
       {/* Toggle Panel */}
@@ -43,7 +56,7 @@ export default function MemoirSidebar({ activeView, setActiveView, mockShortQuot
           )}
           {activeView === "chapters" && (
             <ul className="space-y-2.5 text-[11px] font-serif">
-              {["The girl with the open window", "The things she carried", "A room at the center", "What stays warm"].map((chapter, idx) => (
+              {chapters.map((chapter, idx) => (
                 <li key={chapter} className="flex items-center justify-between text-stone-600 hover:text-memory-maroon cursor-pointer pb-1 border-b border-stone-100">
                   <span className="truncate pr-2">{chapter}</span>
                   <span className="text-[9px] font-sans text-stone-400 shrink-0">0{idx + 1}</span>
