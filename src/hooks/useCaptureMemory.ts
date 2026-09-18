@@ -12,7 +12,7 @@
 import { useState, useRef, useEffect } from "react";
 import { api } from "@/lib/api/client";
 import { useLocalStorageDraft } from "@/hooks/useLocalStorageDraft";
-
+import { memoryInputSchema } from "@/lib/validations/memory";
 export function useCaptureMemory(memoirId: string, onSuccess?: () => void) {
   const [draft, setDraft] = useLocalStorageDraft(`memory_draft_${memoirId}`, {
     title: "",
@@ -225,21 +225,51 @@ export function useCaptureMemory(memoirId: string, onSuccess?: () => void) {
    */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
     setError(null);
     setSuccessMsg(null);
 
-    const currentMemoirId = resolveMemoirId();
-    if (!currentMemoirId) {
-      setError("No active memoir found. Please restart your session.");
-      setLoading(false);
+    // 1. Zod Form Validation (Check required title and valid date)
+    const validation = memoryInputSchema.safeParse({
+      title: draft.title,
+      occurred_start: draft.occurred_start,
+      body_text: draft.body_text,
+    });
+
+    if (!validation.success) {
+      // Displays the friendly message defined in your Zod schema (e.g., "Please provide a title for this memory.")
+      setError(validation.error.issues[0].message);
       return;
     }
+
+    // 2. Content Guard: Ensure the user provided at least some reflection or media
+    const hasText = Boolean(
+      draft.body_text && draft.body_text.trim().length > 0,
+    );
+    const hasMedia = Boolean(photoFile || audioBlob);
+
+    if (!hasText && !hasMedia) {
+      setError(
+        "Please write a reflection, record a voice note, or attach a photograph.",
+      );
+      return;
+    }
+
+    // 3. Memoir Session Check
+    const currentMemoirId = resolveMemoirId();
+    if (!currentMemoirId) {
+      setError(
+        "No active memoir found. Please refresh or restart your session.",
+      );
+      return;
+    }
+
+    // All pre-checks passed: activate loading spinner and begin network pipeline
+    setLoading(true);
 
     try {
       const mediaAssetIds: string[] = [];
 
-      // 1. Photo Upload Pipeline
+      // 4. Photo Upload Pipeline
       if (photoFile) {
         const photoId = await uploadMediaAsset(
           currentMemoirId,
@@ -253,7 +283,7 @@ export function useCaptureMemory(memoirId: string, onSuccess?: () => void) {
         mediaAssetIds.push(photoId);
       }
 
-      // 2. Audio Upload Pipeline
+      // 5. Audio Upload Pipeline
       if (audioBlob) {
         const audioFileName = `voice_memo_${Date.now()}.webm`;
         // const calculatedDuration = await getAudioDurationMs(audioBlob);
@@ -264,17 +294,18 @@ export function useCaptureMemory(memoirId: string, onSuccess?: () => void) {
           "audio/webm",
           "audio",
           "Voice recording",
-          5000,
+          0,
         );
         mediaAssetIds.push(audioId);
       }
 
+      // 6. Persist Memory to Supabase
       const hasDate = Boolean(draft.occurred_start);
 
       await api.createMemory({
         memoir_id: currentMemoirId,
-        title: draft.title,
-        body_text: draft.body_text,
+        title: draft.title.trim(),
+        body_text: draft.body_text ? draft.body_text.trim() : null,
         status: "draft",
         occurred_start: hasDate ? draft.occurred_start : null,
         occurred_end: hasDate ? draft.occurred_start : null,
@@ -283,7 +314,7 @@ export function useCaptureMemory(memoirId: string, onSuccess?: () => void) {
         media_asset_ids: mediaAssetIds,
       });
 
-      // Cleanup form state and release active resources upon success
+      // 7. Cleanup form state and storage on success
       localStorage.removeItem(`memory_draft_${currentMemoirId}`);
       setDraft({
         title: "",
@@ -294,19 +325,28 @@ export function useCaptureMemory(memoirId: string, onSuccess?: () => void) {
       setPhotoCaption("");
       clearRecording();
 
-      setSuccessMsg("Memory successfully captured!");
-      if (onSuccess) onSuccess();
+      setSuccessMsg("Memory successfully captured! Transcribing audio...");
+      
+      // before we refresh the visual feed.
+      if (onSuccess) {
+        setTimeout(() => {
+          onSuccess();
+        }, 3000); 
+      }
+      
     } catch (err: unknown) {
       if (err instanceof Error) {
         setError(err.message);
       } else {
-        setError("Failed to save memory.");
+        setError("An unexpected error occurred while saving your memory.");
       }
     } finally {
-      setLoading(false);
+      // Keep the loading spinner spinning while we wait for the transcript
+      setTimeout(() => {
+        setLoading(false);
+      }, 3000);
     }
   };
-
   return {
     draft,
     setDraft,

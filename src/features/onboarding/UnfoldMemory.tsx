@@ -228,7 +228,12 @@ export default function UnfoldMemory() {
         >
           <motion.button
             type="button"
-            onClick={() => router.push("/memory-moment")}
+            onClick={() => {
+              if (story.trim()) {
+                sessionStorage.setItem("onboarding_initial_memory", story.trim());
+              }
+              router.push("/memory-moment");
+            }}
             disabled={!story.trim()}
             whileHover={story.trim() ? { scale: 1.01 } : {}}
             whileTap={story.trim() ? { scale: 0.99 } : {}}

@@ -33,19 +33,56 @@ export function useAuth() {
     startAuthAction();
 
     try {
+      // 1. Authenticate the user
       const res = await api.login({
         email: data.email,
         password: data.password,
       });
 
-      // Extract and store access token in localStorage for Bearer auth
+      // 2. Extract and store access token
       const accessToken = res.access_token || res.token || res.data?.access_token;
       if (accessToken) {
         localStorage.setItem("access_token", accessToken);
+        window.dispatchEvent(new Event("storage")); 
       }
 
+      // --- SMART MEMOIR CHECK & CREATION LOGIC ---
+      try {
+        await new Promise((resolve) => setTimeout(resolve, 500));
+
+        // Check the database: Does this user already have memoirs?
+        const memoirs = await api.getUserMemoirs();
+        
+        if (!memoirs || memoirs.length === 0) {
+          const pendingMemoirStr = localStorage.getItem("pending_memoir");
+          
+          if (pendingMemoirStr) {
+            const pendingMemoir = JSON.parse(pendingMemoirStr);
+            const createdMemoir = await api.createMemoir(pendingMemoir);
+            const activeMemoir = createdMemoir.data || createdMemoir;
+            
+            localStorage.setItem("active_memoir", JSON.stringify(activeMemoir));
+            localStorage.removeItem("pending_memoir");
+          } else {
+            // Edge case: Logged in, no memoirs in DB, AND skipped onboarding.
+            // Silently redirect to start onboarding naturally.
+            router.push("/memory-subject-selection");
+            return false; 
+          }
+        } else {
+          // MEMOIRS EXIST: Load their existing memoir.
+          localStorage.setItem("active_memoir", JSON.stringify(memoirs[0]));
+          localStorage.removeItem("pending_memoir");
+        }
+      } catch (memoirCheckError) {
+        console.error("Could not verify or create memoir during login", memoirCheckError);
+      }
+      // ------------------------------------------
+
+      // 3. Everything is ready, send them to the dashboard
       router.push("/dashboard");
       return true;
+      
     } catch (err: unknown) {
       const errorMessage =
         err instanceof Error ? err.message : "An error occurred during login";
@@ -69,21 +106,25 @@ export function useAuth() {
       });
 
       const accessToken = res.access_token || res.token || res.data?.access_token;
+      
       if (accessToken) {
+        // User created and session started!
         localStorage.setItem("access_token", accessToken);
+        window.dispatchEvent(new Event("storage"));
         await processPendingMemoir();
+        return true; 
+      } else {
+        // FIX: Registration successful, but awaiting email verification.
+        // Set success message and return FALSE so the UI does NOT redirect.
+        setSuccessMessage("Account created successfully! Please check your email to verify your account.");
+        return false;
       }
 
-      setSuccessMessage(
-        "Account created successfully! Please proceed to log in."
-      );
-      setTimeout(() => router.push("/login"), 2000);
-      return true;
     } catch (err: unknown) {
       const errorMessage =
         err instanceof Error ? err.message : "An unknown error occurred during signup";
-      setServerError(errorMessage);
-      return false;
+      setServerError(errorMessage); 
+      return false; 
     } finally {
       setLoading(false);
     }

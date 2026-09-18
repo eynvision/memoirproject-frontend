@@ -1,11 +1,3 @@
-/**
- * @file signupForm.tsx
- * @description Client-side React component that renders the user registration form,
- * manages form field validation via React Hook Form and Zod, and delegates network actions 
- * and submission states to the useAuth custom hook while maintaining side-by-side 
- * password fields, exact login styling specs, and strict accessibility attributes.
- */
-
 "use client";
 
 import { signupSchema } from "./schemas";
@@ -16,7 +8,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useAuth } from "./hooks";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
 
 const extendedSignupSchema = signupSchema.extend({
   confirmPassword: z.string().min(1, "Please confirm your password"),
@@ -39,15 +30,10 @@ export default function SignupForm() {
     resolver: zodResolver(extendedSignupSchema),
   });
 
-  useEffect(() => {
-    if (successMessage) {
-      router.push("/dashboard");
-    }
-  }, [successMessage, router]);
-
   const onSubmit = async (data: ExtendedSignupInput) => {
     try {
       const success = await handleSignup(data);
+      // Only push to dashboard if we received a session token immediately
       if (success) {
         router.push("/dashboard");
       }
@@ -92,15 +78,15 @@ export default function SignupForm() {
           </div>
         </div>
 
-        {/* Server Success / Error Banners with Accessibility Role */}
+        {/* Server Success / Error Banners */}
         {serverError && (
-          <div role="alert" className="mb-6 p-4 bg-memory-card border border-memory-border text-memory-primary rounded-xl text-sm">
+          <div role="alert" className="mb-6 p-4 bg-red-50 border border-red-200 text-red-700 rounded-xl text-sm font-medium">
             Signup Failed: {serverError}
           </div>
         )}
 
         {successMessage && (
-          <div role="status" className="mb-6 p-4 bg-memory-card border border-memory-border text-memory-primary rounded-xl text-sm">
+          <div role="status" className="mb-6 p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl text-sm font-medium">
             {successMessage}
           </div>
         )}
