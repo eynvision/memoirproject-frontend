@@ -11,6 +11,8 @@ import MemoryFeedList from "./MemoryFeedList";
 import { BookCoverExperience } from "./BookCoverExperience";
 import { ChapterOrganizer } from "./components/ChapterOrganizer";
 
+import SplitWithClio from "@/features/chat/SplitWithClio";
+
 interface MemoirData {
   id?: string;
   subject_name?: string;
@@ -100,12 +102,18 @@ export default function OwnerDashboardPage() {
     router.push("/");
   };
 
+  // Navigate to the memoir preview/edit/publish flow
+  const handlePreviewMemoir = () => {
+    router.push("/memoir-preview");
+  };
+
   return (
     <BookCoverExperience
       title="Personal Life Memoir"
       subtitle="A preserved record of personal stories, reflections, and voice notes."
     >
-      <div className="flex min-h-screen overflow-hidden rounded-2xl border border-memory-border bg-memory-bg text-memory-primary shadow-lg">
+      <SplitWithClio memoirId={memoirId}>
+      <div className="flex min-h-full overflow-hidden bg-memory-bg text-memory-primary">
         <DashboardSidebar
           activeTab={activeTab}
           setActiveTab={setActiveTab}
@@ -118,6 +126,7 @@ export default function OwnerDashboardPage() {
             dob={dob}
             dod={dod}
             onLogout={handleLogout}
+            onPreviewMemoir={handlePreviewMemoir}
           />
 
           <div className="mx-auto w-full max-w-6xl px-5 py-7 sm:px-8 sm:py-9 lg:px-10">
@@ -210,6 +219,7 @@ export default function OwnerDashboardPage() {
           </div>
         </main>
       </div>
+      </SplitWithClio>
     </BookCoverExperience>
   );
 }
