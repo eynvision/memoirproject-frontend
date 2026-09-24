@@ -1,6 +1,13 @@
 import React from "react";
 import { ShortQuote } from "./types";
 
+const DEFAULT_CHAPTER_TITLES = [
+  "The girl with the open window",
+  "The things she carried",
+  "A room at the center",
+  "What stays warm",
+];
+
 interface MemoirSidebarProps {
   activeView: "timeline" | "chapters";
   setActiveView: (val: "timeline" | "chapters") => void;
@@ -13,11 +20,11 @@ export default function MemoirSidebar({
   activeView, 
   setActiveView, 
   mockShortQuotes,
-  chapters = ["The girl with the open window", "The things she carried", "A room at the center", "What stays warm"],
+  chapters = DEFAULT_CHAPTER_TITLES,
   decades = ["1950s", "1960s", "1970s", "1980s", "1990s", "2000s"]
 }: MemoirSidebarProps) {
   const displayDecades = decades.length > 0 ? decades : ["1950s", "1960s", "1970s", "1980s", "1990s", "2000s"];
-  const displayChapters = chapters.length > 0 ? chapters : ["The girl with the open window", "The things she carried", "A room at the center", "What stays warm"];
+  const displayChapters = chapters.length > 0 ? chapters : DEFAULT_CHAPTER_TITLES;
 
   return (
     <aside className="w-full lg:w-56 shrink-0 space-y-8">
