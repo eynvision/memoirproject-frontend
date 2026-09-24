@@ -3,7 +3,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { useExportMemoir } from "@/hooks/useExportMemoir";
-import { api, CommentEntity } from "@/lib/api/client";
+import { api, CommentEntity, ChapterEntity } from "@/lib/api/client";
 
 import MemoirHeader from "@/features/FinalMemoir/MemoirHeader";
 import MemoirHero from "@/features/FinalMemoir/MemoirHero";
@@ -14,6 +14,32 @@ import ScatteredGallery from "@/features/FinalMemoir/ScatteredGallery";
 
 import { mockHeroPhotos, mockMemories, mockShortQuotes } from "@/features/FinalMemoir/mockData";
 import { MemoryItem, HeroPhoto, MemoryImage } from "@/features/FinalMemoir/types";
+
+// Maps real published chapters (nested memories) into the flat MemoryItem
+// shape the existing timeline/chapter rendering already expects.
+function chaptersToMemoryItems(chapters: ChapterEntity[]): MemoryItem[] {
+  return chapters
+    .slice()
+    .sort((a, b) => a.sort_order - b.sort_order)
+    .flatMap((chapter) =>
+      chapter.memories.map((memory) => {
+        const [first] = memory.photos ?? [];
+        return {
+          id: memory.id,
+          author: "Family",
+          title: memory.title ?? undefined,
+          text: memory.body_text ?? "",
+          reactionsCount: 0,
+          chapter: chapter.title,
+          chapterSubtitle: chapter.subtitle ?? undefined,
+          date: memory.occurred_start ?? "",
+          imageUrl: first?.url,
+          imageCaption: first?.caption ?? undefined,
+          images: (memory.photos ?? []).map((p) => ({ id: p.id, url: p.url, caption: p.caption ?? undefined })),
+        };
+      })
+    );
+}
 
 interface ReplyItem {
   id: string;
@@ -181,7 +207,7 @@ export default function FinalMemoirPage() {
             const firstPhoto = photoAssets[0];
             const photoUrl = images[0]?.url || "";
 
-            images.forEach((img) => photosExtracted.push(img));
+            images.forEach((img) => photosExtracted.push({ ...img, caption: img.caption ?? "" }));
 
             const rawDate = record.occurred_start || record.created_at;
             if (rawDate) {
@@ -262,6 +288,21 @@ export default function FinalMemoirPage() {
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
     return uuidRegex.test(id);
   };
+
+  // Prefer the published chapters (from the preview/publish flow) when they
+  // exist; otherwise the live feed loaded above stays in place.
+  useEffect(() => {
+    if (!isValidUuid(memoirId)) return;
+
+    api.getChapters(memoirId, "published")
+      .then((chapters) => {
+        if (chapters.length === 0) return;
+        const sorted = chapters.slice().sort((a, b) => a.sort_order - b.sort_order);
+        setLiveMemories(chaptersToMemoryItems(sorted));
+        setLiveChaptersList(sorted.map((c) => c.title));
+      })
+      .catch((err) => console.error("Failed to load published chapters:", err));
+  }, [memoirId]);
 
   const formatCommentsToTree = (entities: CommentEntity[]): CommentItem[] => {
     const commentMap = new Map<string, CommentItem>();
@@ -668,7 +709,7 @@ const uniqueChapters = liveChaptersList.length > 0
           </div>
         </main>
 
-        <MemoirSidebar 
+        <MemoirSidebar
           activeView={activeView}
           setActiveView={setActiveView}
           mockShortQuotes={mockShortQuotes}

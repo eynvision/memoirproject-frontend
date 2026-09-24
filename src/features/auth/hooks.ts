@@ -45,6 +45,17 @@ export function useAuth() {
         await processPendingMemoir(); // FIX: Added pending memoir creation for logging in
       }
 
+      // Recover this user's active memoir (there is no cache for a
+      // returning login, only for the signup+onboarding flow).
+      try {
+        const memoirs = await api.getMyMemoirs();
+        if (memoirs.length > 0) {
+          localStorage.setItem("active_memoir", JSON.stringify({ data: memoirs[0] }));
+        }
+      } catch (memoirErr) {
+        console.error("Failed to fetch active memoir after login:", memoirErr);
+      }
+
       router.push("/dashboard");
       return true;
     } catch (err: unknown) {
