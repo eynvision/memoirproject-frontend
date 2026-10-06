@@ -5,6 +5,7 @@
  */
 
 "use client";
+
 import Image from "next/image";
 
 export default function ScatteredMemories() {
@@ -15,9 +16,10 @@ export default function ScatteredMemories() {
         {/* 1. The Photo Artifact (Top Left) */}
         <div className="hidden md:block absolute top-16 left-20 lg:left-32 w-48 h-64 bg-gray-200 border-10 border-white shadow-xl -rotate-12 transition-transform duration-500 hover:scale-105 hover:z-20 overflow-hidden">
           <Image
-            src="/TopLeftImage.jpg"
+            src="/TopLeftImage.webp"
             alt="Vintage family memory"
             fill
+            sizes="(max-width: 1024px) 192px, 256px"
             className="w-full h-full object-cover"
           />
         </div>
@@ -25,9 +27,10 @@ export default function ScatteredMemories() {
         {/* 2. The Second Photo Artifact (Bottom Right) */}
         <div className="hidden md:block absolute bottom-24 right-20 lg:right-32 w-72 h-44 bg-gray-200 border-8 border-white shadow-xl -rotate-15 transition-transform duration-500 hover:scale-105 hover:z-20 overflow-hidden">
           <Image
-            src="/BottomRightImage.jpg"
+            src="/BottomRightImage.webp"
             alt="Nostalgic family memory"
             fill
+            sizes="(max-width: 1024px) 288px, 320px"
             className="w-full h-full object-cover"
           />
         </div>
@@ -54,8 +57,8 @@ export default function ScatteredMemories() {
           {/* Updated heading text color to match the global primary theme system */}
           <h2 className="text-memory-primary text-2xl md:text-3xl text-center font-serif leading-relaxed">
             Every family already holds the memoir. It is just{" "}
-            <span className="text-memory-accent italic">scattered across</span> the
-            people who loved them.
+            <span className="text-memory-accent italic">scattered across</span>{" "}
+            the people who loved them.
           </h2>
         </div>
       </section>

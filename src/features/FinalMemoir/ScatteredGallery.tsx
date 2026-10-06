@@ -2,16 +2,32 @@
 
 import Image from "next/image";
 import { HeroPhoto } from "./types";
-import { scatterPositions } from "./mockData";
+
 
 interface ScatteredGalleryProps {
   heroPhotos: HeroPhoto[];
   onClose: () => void;
 }
 
+const scatterPositions = [
+  { top: "5%", left: "5%", rotate: "-6deg" },
+  { top: "10%", left: "80%", rotate: "3deg" },
+  { top: "35%", left: "2%", rotate: "6deg" },
+  { top: "40%", left: "75%", rotate: "-3deg" },
+  { top: "75%", left: "6%", rotate: "-12deg" },
+  { top: "80%", left: "80%", rotate: "12deg" },
+  { top: "2%", left: "40%", rotate: "2deg" },
+  { top: "85%", left: "45%", rotate: "-2deg" },
+  { top: "60%", left: "15%", rotate: "3deg" },
+  { top: "65%", left: "70%", rotate: "-6deg" },
+  { top: 
+    "25%", left: "25%", rotate: "1deg" },
+  { top: "70%", left: "70%", rotate: "-1deg" },
+];
+
 export default function ScatteredGallery({ heroPhotos, onClose }: ScatteredGalleryProps) {
   return (
-    <div className="fixed inset-0 z-[100] bg-[#FAF9F6] overflow-hidden flex items-center justify-center animate-fadeIn">
+    <div className="fixed inset-0 z-100 bg-[#FAF9F6] overflow-hidden flex items-center justify-center animate-fadeIn">
       <div 
         className="absolute inset-0 opacity-40 pointer-events-none mix-blend-multiply"
         style={{
@@ -45,7 +61,7 @@ export default function ScatteredGallery({ heroPhotos, onClose }: ScatteredGalle
               }}
             >
               <figure className="w-48 md:w-64 bg-white p-2.5 shadow-xl border border-stone-200">
-                <div className="relative w-full aspect-[4/3] bg-stone-100 overflow-hidden">
+                <div className="relative w-full aspect-4/3 bg-stone-100 overflow-hidden">
                   <Image src={photo.url} alt={photo.caption || "Archive photo"} fill className="object-cover" />
                 </div>
                 {photo.caption && (

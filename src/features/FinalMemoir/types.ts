@@ -1,9 +1,3 @@
-export interface MemoryImage {
-  id: string;
-  url: string;
-  caption?: string;
-}
-
 export interface MemoryItem {
   id: string;
   author: string;
@@ -12,7 +6,8 @@ export interface MemoryItem {
   reactionsCount: number;
   imageUrl?: string;
   imageCaption?: string;
-  images?: MemoryImage[];
+  images?: { id: string; url: string; caption?: string }[]; // <-- Made optional to match MemoryImage
+  audioUrls?: string[];
   chapter: string;
   chapterSubtitle?: string;
   date: string;
@@ -27,5 +22,11 @@ export interface ShortQuote {
 export interface HeroPhoto {
   id: string;
   url: string;
-  caption: string;
+  caption?: string;
+}
+
+export interface MemoryImage {
+  id: string;
+  url: string;
+  caption?: string;
 }

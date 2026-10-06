@@ -1,28 +1,37 @@
 /**
  * @file subscription.tsx
- * @description Client-side React component that renders the secure payment 
+ * @description Client-side React component that renders the secure payment
  * and subscription form, refactored for complete typography, label, and frame consistency with login and signup.
  */
 
 "use client";
 
 import { useState } from "react";
+
 import { useRouter } from "next/navigation";
+
 import Link from "next/link";
+
 import Image from "next/image";
+
 import { motion } from "framer-motion";
+
+import { ArrowLeft } from "lucide-react";
 
 export default function Subscription() {
   const router = useRouter();
+
   const [loading, setLoading] = useState(false);
 
   const handlePay = (e: React.FormEvent) => {
     e.preventDefault();
+
     setLoading(true);
+
     // Simulate payment processing
     setTimeout(() => {
       setLoading(false);
-      router.push("/");
+      router.push("/dashboard");
     }, 1000);
   };
 
@@ -37,10 +46,11 @@ export default function Subscription() {
         {/* Back */}
         <div className="mb-8">
           <Link
-            href="/invite-family-friends"
+            href="/login"
+            aria-label="Go back"
             className="text-memory-muted hover:text-memory-primary text-[15px] font-medium transition inline-flex items-center gap-1"
           >
-            ←
+            <ArrowLeft size={18} strokeWidth={1.7} />
           </Link>
         </div>
 
@@ -66,6 +76,7 @@ export default function Subscription() {
               height={40}
               className="w-10 h-10 object-contain"
             />
+
             <Image
               src="/masterCard.png"
               alt="Mastercard"
@@ -75,6 +86,7 @@ export default function Subscription() {
             />
           </div>
         </div>
+
         <p className="text-[15px] font-serif italic text-memory-muted mb-6">
           All transactions are secure and encrypted
         </p>
@@ -87,10 +99,14 @@ export default function Subscription() {
               className="block text-xs uppercase tracking-widest font-bold text-memory-primary/70 mb-1.5"
             >
               Card Number
-              <span aria-hidden="true" className="ml-1 text-memory-required">
+              <span
+                aria-hidden="true"
+                className="ml-1 text-memory-required"
+              >
                 *
               </span>
             </label>
+
             <input
               id="card-number"
               type="text"
@@ -107,10 +123,14 @@ export default function Subscription() {
                 className="block text-xs uppercase tracking-widest font-bold text-memory-primary/70 mb-1.5"
               >
                 Expiration Date
-                <span aria-hidden="true" className="ml-1 text-memory-required">
+                <span
+                  aria-hidden="true"
+                  className="ml-1 text-memory-required"
+                >
                   *
                 </span>
               </label>
+
               <input
                 id="card-expiry"
                 type="text"
@@ -125,10 +145,14 @@ export default function Subscription() {
                 className="block text-xs uppercase tracking-widest font-bold text-memory-primary/70 mb-1.5"
               >
                 Security Code
-                <span aria-hidden="true" className="ml-1 text-memory-required">
+                <span
+                  aria-hidden="true"
+                  className="ml-1 text-memory-required"
+                >
                   *
                 </span>
               </label>
+
               <input
                 id="card-cvc"
                 type="text"
@@ -145,10 +169,14 @@ export default function Subscription() {
               className="block text-xs uppercase tracking-widest font-bold text-memory-primary/70 mb-1.5"
             >
               Name on Card
-              <span aria-hidden="true" className="ml-1 text-memory-required">
+              <span
+                aria-hidden="true"
+                className="ml-1 text-memory-required"
+              >
                 *
               </span>
             </label>
+
             <input
               id="card-name"
               type="text"

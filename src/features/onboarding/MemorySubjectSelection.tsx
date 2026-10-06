@@ -8,9 +8,19 @@
 "use client";
 
 import { useState, useEffect, ChangeEvent } from "react";
+
 import { useRouter } from "next/navigation";
+
 import { motion, PanInfo } from "framer-motion";
-import { Heart, Shield, Users, Sparkles, Star } from "lucide-react";
+
+import {
+  ArrowLeft,
+  Heart,
+  Shield,
+  Users,
+  Sparkles,
+  Star,
+} from "lucide-react";
 
 interface OptionItem {
   id: string;
@@ -72,13 +82,16 @@ export default function MemorySubjectSelection() {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent): void => {
       if (step !== "flipping") return;
+
       if (e.key === "ArrowRight" && activeIndex < options.length - 1) {
         setActiveIndex((prev) => prev + 1);
       } else if (e.key === "ArrowLeft" && activeIndex > 0) {
         setActiveIndex((prev) => prev - 1);
       }
     };
+
     window.addEventListener("keydown", handleKeyDown);
+
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [activeIndex, options.length, step]);
 
@@ -97,7 +110,11 @@ export default function MemorySubjectSelection() {
     info: PanInfo
   ): void => {
     const swipeThreshold = 40;
-    if (info.offset.x < -swipeThreshold && activeIndex < options.length - 1) {
+
+    if (
+      info.offset.x < -swipeThreshold &&
+      activeIndex < options.length - 1
+    ) {
       setActiveIndex((prev) => prev + 1);
     } else if (info.offset.x > swipeThreshold && activeIndex > 0) {
       setActiveIndex((prev) => prev - 1);
@@ -131,7 +148,9 @@ export default function MemorySubjectSelection() {
       subject_born_on: dob.trim(),
       subject_died_on: isAlive ? null : dod.trim(),
       subject_is_living: isAlive,
-      description: `A memoir dedicated to my ${selectedOption || "loved one"}.`,
+      description: `A memoir dedicated to my ${
+        selectedOption || "loved one"
+      }.`,
     };
 
     localStorage.setItem("pending_memoir", JSON.stringify(memoirDraft));
@@ -158,7 +177,7 @@ export default function MemorySubjectSelection() {
             }}
             className="text-memory-muted hover:text-memory-primary text-[15px] font-medium transition inline-flex items-center gap-1 cursor-pointer"
           >
-            ←
+            <ArrowLeft size={18} strokeWidth={1.7} />
           </button>
         </div>
 
@@ -172,7 +191,8 @@ export default function MemorySubjectSelection() {
               className="text-center mb-8"
             >
               <h1 className="text-3xl md:text-4xl text-memory-primary leading-snug">
-                Whose voice do you want <br className="hidden sm:block" /> to keep close forever?
+                Whose voice do you want <br className="hidden sm:block" /> to
+                keep close forever?
               </h1>
             </motion.div>
 
@@ -181,7 +201,6 @@ export default function MemorySubjectSelection() {
               {options.map((option, index) => {
                 const offset = index - activeIndex;
                 const absOffset = Math.abs(offset);
-
                 const xOffset = offset * 220;
                 const scale =
                   absOffset === 0 ? 1 : absOffset === 1 ? 0.84 : 0.7;
@@ -226,6 +245,7 @@ export default function MemorySubjectSelection() {
                         <h2 className="text-2xl text-memory-primary mb-3 font-bold">
                           {option.label}
                         </h2>
+
                         <p className="text-sm text-memory-muted leading-relaxed mb-8 font-serif italic max-w-50 mx-auto">
                           &ldquo;{option.description}&rdquo;
                         </p>
@@ -237,6 +257,7 @@ export default function MemorySubjectSelection() {
                       <span className="text-[11px] uppercase tracking-wider font-semibold text-memory-primary">
                         {isCenter ? "Click to Inscribe" : "Select Card"}
                       </span>
+
                       <div className="w-8 h-8 rounded-full bg-memory-primary text-memory-light flex items-center justify-center text-xs shadow-md">
                         →
                       </div>
@@ -295,10 +316,14 @@ export default function MemorySubjectSelection() {
                   className="block text-xs uppercase tracking-widest font-bold text-memory-primary/70 mb-1.5"
                 >
                   Their Name
-                  <span aria-hidden="true" className="ml-1 text-memory-required">
+                  <span
+                    aria-hidden="true"
+                    className="ml-1 text-memory-required"
+                  >
                     *
                   </span>
                 </label>
+
                 <input
                   id="subject-name"
                   type="text"
@@ -320,10 +345,14 @@ export default function MemorySubjectSelection() {
                     className="block text-xs uppercase tracking-widest font-bold text-memory-primary/70 mb-1.5"
                   >
                     Date of Birth
-                    <span aria-hidden="true" className="ml-1 text-memory-required">
+                    <span
+                      aria-hidden="true"
+                      className="ml-1 text-memory-required"
+                    >
                       *
                     </span>
                   </label>
+
                   <input
                     id="subject-dob"
                     type="date"
@@ -344,25 +373,33 @@ export default function MemorySubjectSelection() {
                     >
                       Date of Passing
                       {!isAlive && (
-                        <span aria-hidden="true" className="ml-1 text-memory-required">
+                        <span
+                          aria-hidden="true"
+                          className="ml-1 text-memory-required"
+                        >
                           *
                         </span>
                       )}
                     </label>
+
                     <label className="flex items-center gap-1.5 text-xs text-memory-muted cursor-pointer select-none">
                       <input
                         type="checkbox"
                         checked={isAlive}
                         onChange={(e: ChangeEvent<HTMLInputElement>) => {
                           setIsAlive(e.target.checked);
+
                           if (e.target.checked) setDod("");
+
                           if (errorMessage) setErrorMessage(null);
                         }}
                         className="w-4 h-4 rounded border-memory-border text-memory-primary accent-memory-primary cursor-pointer"
                       />
+
                       <span>Still with us</span>
                     </label>
                   </div>
+
                   <input
                     id="subject-dod"
                     type="date"

@@ -1,24 +1,26 @@
-/**
- * @file page.tsx (LoginForm)
- * @description Client-side React component that renders the user login interface,
- * manages form field validation via React Hook Form and Zod, and delegates network requests
- * and submission states to the useAuth custom hook while preserving exact frame and layout specs,
- * refactored to use shared theme color tokens and strict accessibility attributes.
- */
-
 "use client";
 
 import { useState } from "react";
+
 import Link from "next/link";
+
 import { loginSchema, LoginInput } from "./schemas";
+
 import { motion } from "framer-motion";
+
 import { useForm } from "react-hook-form";
+
 import { zodResolver } from "@hookform/resolvers/zod";
+
 import { useAuth } from "./hooks";
+
+import { ArrowLeft } from "lucide-react";
 
 export default function LoginForm() {
   const [rememberMe, setRememberMe] = useState(false);
+
   const [infoMessage, setInfoMessage] = useState<string | null>(null);
+  
   const { loading, serverError, setServerError, handleLogin } = useAuth();
 
   const {
@@ -47,9 +49,10 @@ export default function LoginForm() {
         <div className="mb-8">
           <Link
             href="/"
+            aria-label="Go back"
             className="text-memory-muted hover:text-memory-primary text-[15px] font-medium transition inline-flex items-center gap-1"
           >
-            ←
+            <ArrowLeft size={18} strokeWidth={1.7} />
           </Link>
         </div>
 
@@ -60,15 +63,15 @@ export default function LoginForm() {
           </h1>
         </div>
 
-        {/* Server Error / Info Banners with Accessibility Role */}
+        {/* Server Error / Info Banners */}
         {serverError && (
-          <div role="alert" className="mb-6 p-4 bg-memory-card border border-memory-border text-memory-primary rounded-xl text-sm">
+          <div role="alert" className="mb-6 p-4 bg-red-50 border border-red-200 text-red-700 rounded-xl text-sm font-medium">
             Login Failed: {serverError}
           </div>
         )}
 
         {infoMessage && (
-          <div role="status" className="mb-6 p-4 bg-memory-card border border-memory-border text-memory-primary rounded-xl text-sm">
+          <div role="status" className="mb-6 p-4 bg-memory-card border border-memory-border text-memory-primary rounded-xl text-sm font-medium">
             {infoMessage}
           </div>
         )}
@@ -84,7 +87,10 @@ export default function LoginForm() {
               className="block text-xs uppercase tracking-widest font-bold text-memory-primary/70 mb-1.5"
             >
               Email
-              <span aria-hidden="true" className="ml-1 text-memory-required">
+              <span
+                aria-hidden="true"
+                className="ml-1 text-memory-required"
+              >
                 *
               </span>
             </label>
@@ -94,7 +100,9 @@ export default function LoginForm() {
               type="email"
               placeholder="e.g. hafsa@example.com"
               aria-invalid={Boolean(errors.email)}
-              aria-describedby={errors.email ? "login-email-error" : undefined}
+              aria-describedby={
+                errors.email ? "login-email-error" : undefined
+              }
               {...register("email")}
               className={`w-full rounded-xl border bg-memory-bg px-5 py-4 text-[16px] text-memory-primary placeholder:text-memory-muted/60 outline-none transition-all duration-300 shadow-2xs ${
                 errors.email
@@ -104,7 +112,11 @@ export default function LoginForm() {
             />
 
             {errors.email && (
-              <p id="login-email-error" role="alert" className="mt-1 text-xs text-red-600 font-medium">
+              <p
+                id="login-email-error"
+                role="alert"
+                className="mt-1 text-xs text-red-600 font-medium"
+              >
                 {errors.email.message}
               </p>
             )}
@@ -116,7 +128,10 @@ export default function LoginForm() {
               className="block text-xs uppercase tracking-widest font-bold text-memory-primary/70 mb-1.5"
             >
               Password
-              <span aria-hidden="true" className="ml-1 text-memory-required">
+              <span
+                aria-hidden="true"
+                className="ml-1 text-memory-required"
+              >
                 *
               </span>
             </label>
@@ -126,7 +141,9 @@ export default function LoginForm() {
               type="password"
               placeholder="Enter your password"
               aria-invalid={Boolean(errors.password)}
-              aria-describedby={errors.password ? "login-password-error" : undefined}
+              aria-describedby={
+                errors.password ? "login-password-error" : undefined
+              }
               {...register("password")}
               className={`w-full rounded-xl border bg-memory-bg px-5 py-4 text-[16px] text-memory-primary placeholder:text-memory-muted/60 outline-none transition-all duration-300 shadow-2xs ${
                 errors.password
@@ -136,7 +153,11 @@ export default function LoginForm() {
             />
 
             {errors.password && (
-              <p id="login-password-error" role="alert" className="mt-1 text-xs text-red-600 font-medium">
+              <p
+                id="login-password-error"
+                role="alert"
+                className="mt-1 text-xs text-red-600 font-medium"
+              >
                 {errors.password.message}
               </p>
             )}
@@ -171,13 +192,20 @@ export default function LoginForm() {
             disabled={loading}
             whileHover={!loading ? { scale: 1.01 } : {}}
             whileTap={!loading ? { scale: 0.99 } : {}}
-            className={`w-full mt-2 py-4 rounded-xl text-[16px] font-semibold transition-all duration-300 cursor-pointer shadow-md ${
+            className={`w-full mt-2 py-4 rounded-xl text-[16px] font-semibold transition-all duration-300 cursor-pointer shadow-md flex items-center justify-center ${
               !loading
                 ? "bg-memory-primary text-memory-light hover:bg-memory-maroon shadow-memory-primary/10"
                 : "bg-memory-border text-memory-muted cursor-not-allowed shadow-none"
             }`}
           >
-            {loading ? "Logging in..." : "Login"}
+            {loading ? (
+              <span className="flex items-center gap-2">
+                <span className="w-4 h-4 border-2 border-memory-muted border-t-transparent rounded-full animate-spin"></span>
+                Verifying...
+              </span>
+            ) : (
+              "Login"
+            )}
           </motion.button>
         </form>
 
